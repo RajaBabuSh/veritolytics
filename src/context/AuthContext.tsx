@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { User, Session, AuthError } from '@supabase/supabase-js';
-import { supabase, isSupabaseConfigured } from '@/lib/supabase';
+import { User, Session } from '@supabase/supabase-js';
+import { supabase, isSupabaseConfigured, getSupabaseDiagnostics, SupabaseConfigDiagnostics } from '@/lib/supabase';
 
 interface SignUpMetadata {
   firstName: string;
@@ -13,6 +13,7 @@ interface AuthContextType {
   session: Session | null;
   loading: boolean;
   isConfigured: boolean;
+  diagnostics: SupabaseConfigDiagnostics;
   signIn: (email: string, password: string) => Promise<{ error: string | null }>;
   signUp: (email: string, password: string, metadata: SignUpMetadata) => Promise<{ error: string | null; needsVerification: boolean }>;
   signOut: () => Promise<void>;
@@ -27,6 +28,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
+  const diagnostics = getSupabaseDiagnostics();
 
   useEffect(() => {
     if (!isSupabaseConfigured || !supabase) {
@@ -56,10 +58,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
   }, []);
 
+  const getMissingConfigMessage = (action: string) => {
+    const diag = getSupabaseDiagnostics();
+    const missing = diag.missingVars.length > 0 ? diag.missingVars.join(' and ') : 'Supabase credentials';
+    return `Supabase credentials are not configured in this deployment (Missing: ${missing}). Add ${missing} in your Vercel Project Settings > Environment Variables, then trigger a manual Redeploy (without build cache) to enable live ${action}.`;
+  };
+
   const signIn = async (email: string, password: string): Promise<{ error: string | null }> => {
     if (!isSupabaseConfigured || !supabase) {
       return {
-        error: 'Supabase credentials are not configured yet. Add your VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to your .env file to enable live authentication.',
+        error: getMissingConfigMessage('authentication'),
       };
     }
 
@@ -87,7 +95,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   ): Promise<{ error: string | null; needsVerification: boolean }> => {
     if (!isSupabaseConfigured || !supabase) {
       return {
-        error: 'Supabase credentials are not configured yet. Add your VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY to your .env file to enable live registration.',
+        error: getMissingConfigMessage('registration'),
         needsVerification: false,
       };
     }
@@ -136,7 +144,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const resetPassword = async (email: string): Promise<{ error: string | null }> => {
     if (!isSupabaseConfigured || !supabase) {
       return {
-        error: 'Supabase credentials are not configured yet. Please configure your .env file to enable password reset emails.',
+        error: getMissingConfigMessage('password reset'),
       };
     }
 
@@ -159,7 +167,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updatePassword = async (newPassword: string): Promise<{ error: string | null }> => {
     if (!isSupabaseConfigured || !supabase) {
       return {
-        error: 'Supabase credentials are not configured yet. Please configure your .env file.',
+        error: getMissingConfigMessage('password update'),
       };
     }
 
@@ -182,7 +190,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const resendVerificationEmail = async (email: string): Promise<{ error: string | null }> => {
     if (!isSupabaseConfigured || !supabase) {
       return {
-        error: 'Supabase credentials are not configured yet.',
+        error: getMissingConfigMessage('verification email'),
       };
     }
 
@@ -213,6 +221,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         session,
         loading,
         isConfigured: isSupabaseConfigured,
+        diagnostics,
         signIn,
         signUp,
         signOut,

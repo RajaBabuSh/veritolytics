@@ -1,34 +1,57 @@
-# Dependencies
-node_modules
-.pnp
-.pnp.js
+# ==============================================================================
+# VERITOLYTICS - GIT IGNORE RULES
+# ==============================================================================
 
-# Build outputs
-dist
-dist-ssr
-*.local
+# Private & Sensitive Credentials
+.env
+.env*
+!.env.example
+*.env
+*.pem
+*.key
+*.cert
+*.crt
 
-# Logs
+# Local Configuration Overrides
+config/*.local.php
+config/local.php
+
+# User Uploads, Sessions & Avatars
+uploads/sessions/*
+!uploads/sessions/.gitkeep
+uploads/avatars/*
+!uploads/avatars/.gitkeep
+uploads/temp/*
+
+# SQLite Databases & Local Storage (Do not commit binary databases with real user data)
+*.sqlite
+*.sqlite3
+*.db
+database/*.sqlite
+database/*.sqlite3
+database/*.db
+
+# Logs & Runtime Dumps
+*.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 lerna-debug.log*
 
-# Environment files - NEVER commit secrets or credentials
-.env
-.env*
-!.env.example
-.env.production
-.env.local
-.env.*.local
-*.env
-*.pem
-*.key
+# Node / Legacy Dependencies & Builds
+node_modules/
+dist/
+dist-ssr/
+.pnp
+.pnp.js
 
-# Editor & OS files
-.vscode/*
-!.vscode/extensions.json
-.idea
+# OS & IDE Files
 .DS_Store
 Thumbs.db
+desktop.ini
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.sublime-project
+*.sublime-workspace

@@ -11,12 +11,22 @@ $currentUri = $_SERVER['REQUEST_URI'] ?? '';
 $activePage = basename(parse_url($currentUri, PHP_URL_PATH));
 
 $db = get_db();
-$surveyCountStmt = $db->query("SELECT COUNT(*) FROM surveys WHERE status = 'active'");
-$activeSurveysCount = (int)$surveyCountStmt->fetchColumn();
+$activeSurveysCount = 0;
+try {
+    $surveyCountStmt = $db->query("SELECT COUNT(*) FROM surveys WHERE status = 'active'");
+    $activeSurveysCount = (int)$surveyCountStmt->fetchColumn();
+} catch (Throwable $e) {
+    $activeSurveysCount = 0;
+}
 
-$notifUnreadStmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = :uid AND is_read = 0");
-$notifUnreadStmt->execute([':uid' => $user['id']]);
-$sidebarUnreadCount = (int)$notifUnreadStmt->fetchColumn();
+$sidebarUnreadCount = 0;
+try {
+    $notifUnreadStmt = $db->prepare("SELECT COUNT(*) FROM notifications WHERE user_id = :uid AND is_read = 0");
+    $notifUnreadStmt->execute([':uid' => $user['id']]);
+    $sidebarUnreadCount = (int)$notifUnreadStmt->fetchColumn();
+} catch (Throwable $e) {
+    $sidebarUnreadCount = 0;
+}
 ?>
 
 <!-- Desktop Sidebar -->

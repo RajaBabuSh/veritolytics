@@ -49,7 +49,11 @@ class Database {
             self::$driver = 'mysql';
             return self::$instance;
         } catch (PDOException $e) {
-            // MySQL could not be reached (e.g. XAMPP MySQL not started yet).
+            // Log MySQL error if an external database host was configured
+            if ($host !== '127.0.0.1' && $host !== 'localhost') {
+                error_log("Veritolytics MySQL Cloud Connection Notice: " . $e->getMessage() . " (Host: {$host}, Port: {$port}, Database: {$dbname})");
+            }
+
             // Attempt 2: Use SQLite fallback database for zero-friction local testing
             $sqlitePath = dirname(__DIR__) . '/database/veritolytics.sqlite';
             $isNewDb = !file_exists($sqlitePath);
@@ -70,6 +74,27 @@ class Database {
                     if ($schemaSql) {
                         self::$instance->exec($schemaSql);
                     }
+                }
+
+                // Auto-migrate missing columns for SQLite to ensure complete schema parity
+                try {
+                    $cols = self::$instance->query("PRAGMA table_info(users)")->fetchAll(PDO::FETCH_COLUMN, 1);
+                    $requiredCols = [
+                        'pending_email' => 'TEXT DEFAULT NULL',
+                        'email_verification_token' => 'TEXT DEFAULT NULL',
+                        'email_verification_expires_at' => 'TEXT DEFAULT NULL',
+                        'state' => 'TEXT DEFAULT NULL',
+                        'city' => 'TEXT DEFAULT NULL',
+                        'avatar' => 'TEXT DEFAULT NULL',
+                        'notification_preferences' => 'TEXT DEFAULT NULL',
+                    ];
+                    foreach ($requiredCols as $colName => $colDef) {
+                        if (!in_array($colName, $cols)) {
+                            self::$instance->exec("ALTER TABLE users ADD COLUMN {$colName} {$colDef}");
+                        }
+                    }
+                } catch (Throwable $migrateEx) {
+                    // Suppress if already being initialized
                 }
 
                 return self::$instance;

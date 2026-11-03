@@ -14,27 +14,37 @@ $pageTitle = 'Dashboard Overview';
 $db = get_db();
 
 // 1. Fetch available surveys (not yet completed by this user)
-$surveysStmt = $db->prepare("
-    SELECT s.*, 
-           (SELECT COUNT(*) FROM survey_responses sr WHERE sr.survey_id = s.id AND sr.user_id = :uid) as is_completed
-    FROM surveys s
-    WHERE s.status = 'active'
-    ORDER BY s.reward_points DESC
-    LIMIT 4
-");
-$surveysStmt->execute([':uid' => $user['id']]);
-$activeSurveys = $surveysStmt->fetchAll();
+$activeSurveys = [];
+try {
+    $surveysStmt = $db->prepare("
+        SELECT s.*, 
+               (SELECT COUNT(*) FROM survey_responses sr WHERE sr.survey_id = s.id AND sr.user_id = :uid) as is_completed
+        FROM surveys s
+        WHERE s.status = 'active'
+        ORDER BY s.reward_points DESC
+        LIMIT 4
+    ");
+    $surveysStmt->execute([':uid' => $user['id']]);
+    $activeSurveys = $surveysStmt->fetchAll() ?: [];
+} catch (Throwable $e) {
+    $activeSurveys = [];
+}
 
 // 2. Fetch recent ledger transactions
-$txStmt = $db->prepare("
-    SELECT id, type, title, points, amount_usd, status, created_at 
-    FROM transactions 
-    WHERE user_id = :uid 
-    ORDER BY created_at DESC 
-    LIMIT 5
-");
-$txStmt->execute([':uid' => $user['id']]);
-$recentTransactions = $txStmt->fetchAll();
+$recentTransactions = [];
+try {
+    $txStmt = $db->prepare("
+        SELECT id, type, title, points, amount_usd, status, created_at 
+        FROM transactions 
+        WHERE user_id = :uid 
+        ORDER BY created_at DESC 
+        LIMIT 5
+    ");
+    $txStmt->execute([':uid' => $user['id']]);
+    $recentTransactions = $txStmt->fetchAll() ?: [];
+} catch (Throwable $e) {
+    $recentTransactions = [];
+}
 
 // 3. Profile completion percentage
 $profilePct = $user['profile_completion_pct'] ?? calculate_profile_completion($user);

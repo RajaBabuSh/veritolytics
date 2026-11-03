@@ -23,17 +23,45 @@ function current_user(): ?array {
     }
 
     $db = get_db();
-    $stmt = $db->prepare("
-        SELECT id, first_name, last_name, email, pending_email, email_verification_token,
-               country, state, city, phone, date_of_birth, gender, avatar,
-               employment_status, annual_income, education_level, role, status,
-               balance_points, lifetime_earnings_usd, completed_surveys_count,
-               profile_completion_pct, notification_preferences, created_at, updated_at
-        FROM users 
-        WHERE id = :id
-    ");
-    $stmt->execute([':id' => $_SESSION['user_id']]);
-    $user = $stmt->fetch();
+    try {
+        $stmt = $db->prepare("
+            SELECT id, first_name, last_name, email, pending_email, email_verification_token,
+                   country, state, city, phone, date_of_birth, gender, avatar,
+                   employment_status, annual_income, education_level, role, status,
+                   balance_points, lifetime_earnings_usd, completed_surveys_count,
+                   profile_completion_pct, notification_preferences, created_at, updated_at
+            FROM users 
+            WHERE id = :id
+        ");
+        $stmt->execute([':id' => $_SESSION['user_id']]);
+        $user = $stmt->fetch();
+    } catch (Throwable $e) {
+        // Fallback for minimal user schema or during migrations
+        try {
+            $stmt = $db->prepare("
+                SELECT id, first_name, last_name, email,
+                       country, phone, date_of_birth, gender,
+                       employment_status, annual_income, education_level, role, status,
+                       balance_points, lifetime_earnings_usd, completed_surveys_count,
+                       profile_completion_pct, created_at, updated_at
+                FROM users 
+                WHERE id = :id
+            ");
+            $stmt->execute([':id' => $_SESSION['user_id']]);
+            $user = $stmt->fetch();
+            if ($user) {
+                $user['pending_email'] = null;
+                $user['email_verification_token'] = null;
+                $user['email_verification_expires_at'] = null;
+                $user['state'] = null;
+                $user['city'] = null;
+                $user['avatar'] = null;
+                $user['notification_preferences'] = null;
+            }
+        } catch (Throwable $e2) {
+            $user = null;
+        }
+    }
 
     if (!$user || $user['status'] === 'suspended') {
         // Invalidate session if user was deleted or suspended

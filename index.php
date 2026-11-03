@@ -55,7 +55,7 @@ require_once __DIR__ . '/includes/header.php';
 
                 <!-- Supporting Description -->
                 <p class="lead text-muted mb-4 pe-lg-4 leading-relaxed" style="font-size: 1.15rem; max-width: 620px;">
-                    Veritolytics is an elite market research community connecting verified respondents with corporate decision-makers, universities, and tech innovators. Share your genuine perspective and earn direct PayPal cash transfers and digital gift cards.
+                    Veritopinion is an elite market research community connecting verified respondents with corporate decision-makers, universities, and tech innovators. Share your genuine perspective and earn direct PayPal cash transfers and digital gift cards.
                 </p>
 
                 <!-- CTAs -->
@@ -187,16 +187,16 @@ require_once __DIR__ . '/includes/header.php';
 </section>
 
 <!-- ==============================================================================
-     2. WHY CHOOSE VERITOLYTICS (KEY DIFFERENTIATORS)
+     2. WHY CHOOSE VERITOPINION (KEY DIFFERENTIATORS)
      ============================================================================== -->
 <section id="why-us" class="py-5 my-lg-4">
     <div class="container py-lg-3">
         <div class="text-center max-w-700 mx-auto mb-5">
             <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-semibold mb-2">
-                Why Veritolytics
+                Why Veritopinion
             </span>
             <h2 class="fw-bold text-dark mb-2">Engineered For Quality & Respect</h2>
-            <p class="text-muted">Unlike legacy survey mills, Veritolytics treats your time as an invaluable research asset.</p>
+            <p class="text-muted">Unlike legacy survey mills, Veritopinion treats your time as an invaluable research asset.</p>
         </div>
 
         <div class="row g-4">
@@ -260,7 +260,7 @@ require_once __DIR__ . '/includes/header.php';
             <span class="badge bg-primary-subtle text-primary border border-primary-subtle rounded-pill px-3 py-1 fw-semibold mb-2">
                 Simple 3-Step Process
             </span>
-            <h2 class="fw-bold text-dark mb-2">How Veritolytics Works</h2>
+            <h2 class="fw-bold text-dark mb-2">How Veritopinion Works</h2>
             <p class="text-muted">From registration to digital payout in three seamless steps.</p>
         </div>
 
@@ -361,7 +361,7 @@ require_once __DIR__ . '/includes/header.php';
                 Diverse Research Sectors
             </span>
             <h2 class="fw-bold text-dark mb-2">What Topics Will You Influence?</h2>
-            <p class="text-muted">Top organizations rely on Veritolytics panel members for quantitative feedback across diverse sectors.</p>
+            <p class="text-muted">Top organizations rely on Veritopinion panel members for quantitative feedback across diverse sectors.</p>
         </div>
 
         <div class="row g-3">
@@ -464,7 +464,7 @@ require_once __DIR__ . '/includes/header.php';
                 </span>
                 <h2 class="fw-bold text-dark mb-3">Your Perspective Shapes Tomorrow's Products</h2>
                 <p class="text-muted leading-relaxed mb-4">
-                    Before companies launch new digital services or store products, they need real, unbiased data. By participating in Veritolytics studies, you become an active co-creator in global product evolution while earning tangible, verified financial rewards.
+                    Before companies launch new digital services or store products, they need real, unbiased data. By participating in Veritopinion studies, you become an active co-creator in global product evolution while earning tangible, verified financial rewards.
                 </p>
 
                 <div class="row g-3">
@@ -542,7 +542,7 @@ require_once __DIR__ . '/includes/header.php';
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="faqHeading1">
                             <button class="accordion-button fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse1" aria-expanded="true" aria-controls="faqCollapse1">
-                                How much is each Veritolytics point worth?
+                                How much is each Veritopinion point worth?
                             </button>
                         </h2>
                         <div id="faqCollapse1" class="accordion-collapse collapse show" aria-labelledby="faqHeading1" data-bs-parent="#faqAccordion">
@@ -581,12 +581,12 @@ require_once __DIR__ . '/includes/header.php';
                     <div class="accordion-item">
                         <h2 class="accordion-header" id="faqHeading4">
                             <button class="accordion-button collapsed fw-bold text-dark" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse4" aria-expanded="false" aria-controls="faqCollapse4">
-                                Why do other survey websites screen out respondents, and how does Veritolytics solve this?
+                                Why do other survey websites screen out respondents, and how does Veritopinion solve this?
                             </button>
                         </h2>
                         <div id="faqCollapse4" class="accordion-collapse collapse" aria-labelledby="faqHeading4" data-bs-parent="#faqAccordion">
                             <div class="accordion-body text-muted small leading-relaxed">
-                                Traditional websites invite respondents blindly and screen them out halfway through. Veritolytics uses an upfront demographic profile to match your background directly with research quotas before you begin, drastically minimizing disqualifications.
+                                Traditional websites invite respondents blindly and screen them out halfway through. Veritopinion uses an upfront demographic profile to match your background directly with research quotas before you begin, drastically minimizing disqualifications.
                             </div>
                         </div>
                     </div>
@@ -599,7 +599,7 @@ require_once __DIR__ . '/includes/header.php';
                         </h2>
                         <div id="faqCollapse5" class="accordion-collapse collapse" aria-labelledby="faqHeading5" data-bs-parent="#faqAccordion">
                             <div class="accordion-body text-muted small leading-relaxed">
-                                Yes. Veritolytics operates in full compliance with ESOMAR, GDPR, and CCPA standards. Your responses are anonymized and aggregated with other panelists. We never sell your personal contact details to marketers.
+                                Yes. Veritopinion operates in full compliance with ESOMAR, GDPR, and CCPA standards. Your responses are anonymized and aggregated with other panelists. We never sell your personal contact details to marketers.
                             </div>
                         </div>
                     </div>

@@ -144,7 +144,7 @@ require_once __DIR__ . '/../includes/member_header.php';
                     <div class="p-3 bg-light rounded-3 border small mb-3">
                         <div class="d-flex justify-content-between mb-1.5">
                             <span class="text-muted">Direct Email:</span>
-                            <span class="fw-bold text-dark">support@veritolytics.com</span>
+                            <span class="fw-bold text-dark">support@veritopinion.com</span>
                         </div>
                         <div class="d-flex justify-content-between mb-1.5">
                             <span class="text-muted">Response Time:</span>
@@ -200,7 +200,7 @@ require_once __DIR__ . '/../includes/member_header.php';
                                 <div class="p-3 rounded-3 bg-primary-subtle bg-opacity-25 border-start border-primary border-3 mt-2">
                                     <div class="d-flex justify-content-between align-items-center mb-1">
                                         <span class="small fw-bold text-primary">
-                                            <i class="bi bi-reply-fill me-1"></i> Response from Veritolytics Operations Desk:
+                                            <i class="bi bi-reply-fill me-1"></i> Response from Veritopinion Operations Desk:
                                         </span>
                                         <?php if (!empty($t['replied_at'])): ?>
                                             <small class="text-muted" style="font-size: 0.75rem;">

@@ -9,8 +9,8 @@ if (!defined('VERITOLYTICS_INIT')) {
     define('VERITOLYTICS_INIT', true);
 
     // Application Metadata
-    define('APP_NAME', 'VERITOLYTICS');
-    define('APP_TAGLINE', 'Your Voice. Your Insights. Your Impact.');
+    define('APP_NAME', 'VERITOPINION');
+    define('APP_TAGLINE', 'Your Voice. Your Opinions. Your Impact.');
     define('APP_VERSION', '1.0.0');
 
     // Economy & Points Rules (100 pts = $1.00 USD)

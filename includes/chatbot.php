@@ -8,7 +8,7 @@ require_once __DIR__ . '/csrf.php';
 ?>
 
 <!-- Floating Chatbot Launcher Button -->
-<div id="chatFloatingBtn" class="chat-floating-btn" title="Veritolytics Assistant">
+<div id="chatFloatingBtn" class="chat-floating-btn" title="Veritopinion Assistant">
     <i class="bi bi-chat-dots-fill fs-4"></i>
     <span class="chat-pulse"></span>
 </div>
@@ -21,7 +21,7 @@ require_once __DIR__ . '/csrf.php';
                 <i class="bi bi-robot fs-5"></i>
             </div>
             <div>
-                <h6 class="mb-0 fw-bold text-white fs-6">Veritolytics Assistant</h6>
+                <h6 class="mb-0 fw-bold text-white fs-6">Veritopinion Assistant</h6>
                 <small class="text-white-50" style="font-size: 0.725rem;">
                     <i class="bi bi-circle-fill text-success" style="font-size: 0.5rem;"></i> Online • Instant Help
                 </small>
@@ -34,7 +34,7 @@ require_once __DIR__ . '/csrf.php';
 
     <div id="chatBody" class="chat-body">
         <div class="chat-bubble assistant">
-            Hello! 👋 Welcome to <strong>Veritolytics</strong>. How can I help you today?
+            Hello! 👋 Welcome to <strong>Veritopinion</strong>. How can I help you today?
         </div>
         <div class="chat-quick-replies">
             <button type="button" class="chat-pill" data-query="Survey Help">Survey Help</button>

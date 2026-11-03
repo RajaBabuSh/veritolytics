@@ -46,8 +46,8 @@ if ($currentUser) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle) ?></title>
-    <meta name="description" content="Veritolytics is an elite survey research rewards platform. Share your insights on consumer tech, media, and finance and earn verified PayPal cash and gift card rewards.">
-    <link rel="icon" type="image/png" href="<?= BASE_URL ?>/assets/images/veritolytics-icon.png">
+    <meta name="description" content="Veritopinion is an elite survey research rewards platform. Share your insights on consumer tech, media, and finance and earn verified PayPal cash and gift card rewards.">
+    <link rel="icon" type="image/png" href="<?= BASE_URL ?>/assets/images/veritopinion-icon.png">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
@@ -66,8 +66,8 @@ if ($currentUser) {
 <nav class="navbar navbar-expand-lg navbar-light navbar-vy-light sticky-top py-2.5">
     <div class="container">
         <!-- Brand Logo -->
-        <a class="navbar-brand d-flex align-items-center text-decoration-none me-2 me-lg-3" href="<?= BASE_URL ?>/" aria-label="Veritolytics">
-            <img src="<?= BASE_URL ?>/assets/images/veritolytics-logo.png" alt="Veritolytics" class="brand-logo-img">
+        <a class="navbar-brand d-flex align-items-center text-decoration-none me-2 me-lg-3" href="<?= BASE_URL ?>/" aria-label="Veritopinion">
+            <img src="<?= BASE_URL ?>/assets/images/veritopinion-logo.png" alt="Veritopinion" class="brand-logo-img">
         </a>
 
         <!-- Right Side Header Controls (Dynamic Authentication State) -->

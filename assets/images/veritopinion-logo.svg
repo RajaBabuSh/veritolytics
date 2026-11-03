@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 70" width="340" height="70" fill="none">
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700&amp;display=swap');
+      .brand-text-navy {
+        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+        font-size: 42px;
+        font-weight: 600;
+        fill: #0c365a;
+        letter-spacing: -0.5px;
+      }
+      .brand-orange-o {
+        stroke: #e85f42;
+        stroke-width: 4.8;
+        stroke-linecap: round;
+        fill: none;
+      }
+      .brand-blue-p-circle {
+        stroke: #0c365a;
+        stroke-width: 4.8;
+        fill: none;
+      }
+      .brand-blue-p-stem {
+        stroke: #0c365a;
+        stroke-width: 4.8;
+        stroke-linecap: round;
+      }
+    </style>
+  </defs>
+
+  <!-- 'verit' text -->
+  <text x="12" y="47" class="brand-text-navy">verit</text>
+
+  <!-- Combined 'op' symbol -->
+  <g transform="translate(118, 0)">
+    <!-- Orange 'o' arc (open slightly on left to interlock with p) -->
+    <path d="M 17,21.5 A 14.5,14.5 0 1,1 17,46.5" class="brand-orange-o" />
+    
+    <!-- Blue 'p' vertical stem -->
+    <line x1="22" y1="21.5" x2="22" y2="65" class="brand-blue-p-stem" />
+    
+    <!-- Blue 'p' loop circle -->
+    <circle cx="36" cy="34" r="14" class="brand-blue-p-circle" />
+  </g>
+
+  <!-- 'inion' text -->
+  <text x="180" y="47" class="brand-text-navy">inion</text>
+</svg>

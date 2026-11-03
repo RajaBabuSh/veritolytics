@@ -23,7 +23,7 @@ $initials = strtoupper(substr($admin['first_name'], 0, 1) . substr($admin['last_
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?= e($pageTitle ?? 'Admin Portal') ?> | <?= APP_NAME ?></title>
-    <link rel="icon" type="image/png" href="<?= BASE_URL ?>/assets/images/veritolytics-icon.png">
+    <link rel="icon" type="image/png" href="<?= BASE_URL ?>/assets/images/veritopinion-icon.png">
 
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -42,8 +42,8 @@ $initials = strtoupper(substr($admin['first_name'], 0, 1) . substr($admin['last_
             <button class="btn btn-sm btn-light d-lg-none border" type="button" data-bs-toggle="offcanvas" data-bs-target="#adminSidebarOffcanvas" aria-controls="adminSidebarOffcanvas">
                 <i class="bi bi-list fs-5"></i>
             </button>
-            <a class="navbar-brand d-flex align-items-center m-0" href="<?= BASE_URL ?>/admin/dashboard.php" aria-label="Veritolytics">
-                <img src="<?= BASE_URL ?>/assets/images/veritolytics-logo.png" alt="Veritolytics" height="34" class="brand-logo-img">
+            <a class="navbar-brand d-flex align-items-center m-0" href="<?= BASE_URL ?>/admin/dashboard.php" aria-label="Veritopinion">
+                <img src="<?= BASE_URL ?>/assets/images/veritopinion-logo.png" alt="Veritopinion" height="34" class="brand-logo-img">
             </a>
             <span class="badge bg-danger-subtle text-danger border border-danger-subtle rounded-pill px-2.5 py-1 fw-bold small">
                 Admin Console

@@ -544,7 +544,7 @@ require_once __DIR__ . '/../includes/member_header.php';
                         <i class="bi bi-lock-fill text-success me-1"></i> Data Protection
                     </h6>
                     <p class="text-muted small mb-0">
-                        Veritolytics never sells your individual identity. Your demographic attributes are anonymized and aggregated into statistical survey samples in compliance with ESOMAR guidelines.
+                        Veritopinion never sells your individual identity. Your demographic attributes are anonymized and aggregated into statistical survey samples in compliance with ESOMAR guidelines.
                     </p>
                 </div>
             </div>

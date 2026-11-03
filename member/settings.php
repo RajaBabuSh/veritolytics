@@ -75,7 +75,7 @@ if (isset($_GET['action']) && $_GET['action'] === 'export_data') {
     ];
 
     header('Content-Type: application/json; charset=utf-8');
-    header('Content-Disposition: attachment; filename="veritolytics_data_user_' . $user['id'] . '.json"');
+    header('Content-Disposition: attachment; filename="veritopinion_data_user_' . $user['id'] . '.json"');
     echo json_encode($exportData, JSON_PRETTY_PRINT);
     exit();
 }
@@ -198,7 +198,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $dupStmt = $db->prepare("SELECT id FROM users WHERE email = :email AND id != :id");
             $dupStmt->execute([':email' => $newEmail, ':id' => $user['id']]);
             if ($dupStmt->fetch()) {
-                flash('danger', 'The email address "' . e($newEmail) . '" is already registered to another Veritolytics account.');
+                flash('danger', 'The email address "' . e($newEmail) . '" is already registered to another Veritopinion account.');
                 redirect('/member/settings.php?tab=email');
             }
 
@@ -667,7 +667,7 @@ require_once __DIR__ . '/../includes/member_header.php';
                                         <span class="input-group-text bg-light text-muted border-end-0"><i class="bi bi-envelope"></i></span>
                                         <input type="email" id="new_email" name="new_email" class="form-control border-start-0 rounded-end-3" placeholder="name@example.com" required>
                                     </div>
-                                    <small class="text-muted" style="font-size: 0.725rem;">Must be a valid email address not already registered on Veritolytics.</small>
+                                    <small class="text-muted" style="font-size: 0.725rem;">Must be a valid email address not already registered on Veritopinion.</small>
                                 </div>
 
                                 <div class="mb-4">
@@ -891,7 +891,7 @@ require_once __DIR__ . '/../includes/member_header.php';
                         <div class="p-3 bg-white rounded-3 border mb-4 small text-muted">
                             <div class="d-flex align-items-center gap-2 mb-1 text-dark fw-bold">
                                 <i class="bi bi-shield-check text-success"></i>
-                                <span>Veritolytics Privacy Shield</span>
+                                <span>Veritopinion Privacy Shield</span>
                             </div>
                             <span>Your survey answers are encrypted, detached from your personal contact details, and combined into statistical datasets before corporate research clients access them.</span>
                         </div>

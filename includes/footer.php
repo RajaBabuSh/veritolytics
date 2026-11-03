@@ -13,7 +13,7 @@ require_once __DIR__ . '/../config/app.php';
         <div class="row g-4 justify-content-between mb-4">
             <div class="col-lg-4 col-md-6">
                 <div class="d-flex align-items-center mb-3">
-                    <img src="<?= BASE_URL ?>/assets/images/veritolytics-logo.png" alt="Veritolytics" class="brand-logo-img" style="height: 42px;">
+                    <img src="<?= BASE_URL ?>/assets/images/veritopinion-logo.png" alt="Veritopinion" class="brand-logo-img" style="height: 42px;">
                 </div>
                 <p class="text-muted small leading-relaxed mb-3">
                     <?= APP_TAGLINE ?> An enterprise quantitative research panel connecting verified global respondents with corporate, academic, and consumer insights initiatives.
@@ -30,7 +30,7 @@ require_once __DIR__ . '/../config/app.php';
                 <h6 class="fw-bold text-dark mb-3">Platform</h6>
                 <ul class="list-unstyled space-y-2 small">
                     <li class="mb-2"><a href="<?= BASE_URL ?>/#home" class="text-muted text-decoration-none">Home</a></li>
-                    <li class="mb-2"><a href="<?= BASE_URL ?>/#why-us" class="text-muted text-decoration-none">Why Veritolytics</a></li>
+                    <li class="mb-2"><a href="<?= BASE_URL ?>/#why-us" class="text-muted text-decoration-none">Why Veritopinion</a></li>
                     <li class="mb-2"><a href="<?= BASE_URL ?>/#how-it-works" class="text-muted text-decoration-none">How It Works</a></li>
                     <li class="mb-2"><a href="<?= BASE_URL ?>/#rewards" class="text-muted text-decoration-none">Rewards Catalog</a></li>
                     <li class="mb-2"><a href="<?= BASE_URL ?>/#categories" class="text-muted text-decoration-none">Categories</a></li>
@@ -54,7 +54,7 @@ require_once __DIR__ . '/../config/app.php';
                 <div class="footer-support-card p-3 rounded-4 border text-muted small">
                     <div class="d-flex align-items-center gap-2 mb-1.5">
                         <i class="bi bi-envelope text-primary"></i>
-                        <span class="text-dark fw-semibold">support@veritolytics.com</span>
+                        <span class="text-dark fw-semibold">support@veritopinion.com</span>
                     </div>
                     <div class="d-flex align-items-center gap-2">
                         <i class="bi bi-clock text-warning"></i>

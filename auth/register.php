@@ -91,7 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Send Welcome In-App Notification
                     add_notification(
                         $newUserId,
-                        'Welcome to Veritolytics! 🎉',
+                        'Welcome to Veritopinion! 🎉',
                         'Your panel registration is complete. 500 Welcome Points ($5.00) have been deposited into your wallet!',
                         'success',
                         '/member/wallet.php'
@@ -102,7 +102,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Establish session and persistent authentication
                     set_authenticated_session($newUserId, 'member', $hash);
 
-                    flash('success', "Welcome to Veritolytics, {$firstName}! 500 Welcome Points have been added to your wallet.");
+                    flash('success', "Welcome to Veritopinion, {$firstName}! 500 Welcome Points have been added to your wallet.");
                     redirect('/member/dashboard.php');
                 }
             } catch (PDOException $e) {
@@ -216,7 +216,7 @@ require_once __DIR__ . '/../includes/header.php';
                 </form>
 
                 <div class="text-center mt-4 pt-3 border-top small text-muted">
-                    Already have a Veritolytics account? 
+                    Already have a Veritopinion account? 
                     <a href="<?= BASE_URL ?>/auth/login.php" class="text-primary fw-bold text-decoration-none ms-1">Sign In</a>
                 </div>
             </div>

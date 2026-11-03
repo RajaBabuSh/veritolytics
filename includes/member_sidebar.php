@@ -112,7 +112,7 @@ try {
 <div class="offcanvas offcanvas-start rounded-end-4" tabindex="-1" id="memberSidebarOffcanvas" aria-labelledby="memberSidebarOffcanvasLabel">
     <div class="offcanvas-header border-bottom">
         <div class="d-flex align-items-center">
-            <img src="<?= BASE_URL ?>/assets/images/veritolytics-logo.png" alt="Veritolytics" height="32" class="brand-logo-img">
+            <img src="<?= BASE_URL ?>/assets/images/veritopinion-logo.png" alt="Veritopinion" height="32" class="brand-logo-img">
         </div>
         <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
     </div>

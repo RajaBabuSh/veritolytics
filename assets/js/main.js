@@ -38,7 +38,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   const faqData = {
     'survey help': {
-      answer: 'Surveys on Veritolytics are matched in real-time based on your profile demographics. If no surveys appear right now, researcher quotas may be full. Keep your profile 100% complete for priority invites!',
+      answer: 'Surveys on Veritopinion are matched in real-time based on your profile demographics. If no surveys appear right now, researcher quotas may be full. Keep your profile 100% complete for priority invites!',
       pills: ['Points & Wallet', 'Rewards & Payouts', 'Contact Support']
     },
     'points & wallet': {

@@ -9,8 +9,8 @@ if (!defined('VERITOLYTICS_INIT')) {
     define('VERITOLYTICS_INIT', true);
 
     // Application Metadata
-    define('APP_NAME', 'VERITOLYTICS');
-    define('APP_TAGLINE', 'Your Voice. Your Insights. Your Impact.');
+    define('APP_NAME', 'VERITOPINION');
+    define('APP_TAGLINE', 'Your Voice. Your Opinions. Your Impact.');
     define('APP_VERSION', '1.0.0');
 
     // Economy & Points Rules (100 pts = $1.00 USD)
@@ -97,7 +97,7 @@ if (!defined('VERITOLYTICS_INIT')) {
         // Find project root if in subfolder
         $parts = explode('/', trim($scriptPath, '/'));
         $subfolder = '';
-        if (!empty($parts[0]) && in_array(strtolower($parts[0]), ['veritolytics-php', 'veritolytics'])) {
+        if (!empty($parts[0]) && in_array(strtolower($parts[0]), ['veritolytics-php', 'veritolytics', 'veritopinion-php', 'veritopinion'])) {
             $subfolder = '/' . $parts[0];
         }
         define('BASE_URL', rtrim($protocol . $host . $subfolder, '/'));

@@ -33,9 +33,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             if ($user && password_verify($password, $user['password_hash'])) {
                 if (!empty($user['deleted_at'])) {
-                    $error = 'This account has been deactivated. Please contact support@veritolytics.com.';
+                    $error = 'This account has been deactivated. Please contact support@veritopinion.com.';
                 } elseif ($user['status'] === 'suspended') {
-                    $error = 'Your account has been suspended. Please contact support@veritolytics.com.';
+                    $error = 'Your account has been suspended. Please contact support@veritopinion.com.';
                 } else {
                     set_authenticated_session((int)$user['id'], (string)$user['role'], (string)$user['password_hash']);
 

@@ -12,9 +12,8 @@ require_once __DIR__ . '/../config/app.php';
     <div class="container">
         <div class="row g-4 justify-content-between mb-4">
             <div class="col-lg-4 col-md-6">
-                <div class="d-flex align-items-center gap-2.5 mb-3">
-                    <img src="<?= BASE_URL ?>/assets/images/veritolytics-logo.png" alt="Veritolytics" class="brand-logo-img rounded-2" height="36">
-                    <span class="brand-text fs-4 text-dark">VERITOLYTICS</span>
+                <div class="d-flex align-items-center mb-3">
+                    <img src="<?= BASE_URL ?>/assets/images/veritolytics-logo.png" alt="Veritolytics" class="brand-logo-img" style="height: 42px;">
                 </div>
                 <p class="text-muted small leading-relaxed mb-3">
                     <?= APP_TAGLINE ?> An enterprise quantitative research panel connecting verified global respondents with corporate, academic, and consumer insights initiatives.

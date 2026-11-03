@@ -1,6 +1,6 @@
 <?php
 /**
- * Test Suite for Redesigned Veritolytics Split-Screen Login Page
+ * Test Suite for Clean & Simple Veritolytics Login Page
  */
 
 require_once __DIR__ . '/../config/app.php';
@@ -10,7 +10,7 @@ require_once __DIR__ . '/../includes/csrf.php';
 require_once __DIR__ . '/../includes/auth_check.php';
 
 echo "============================================================\n";
-echo "   VERITOLYTICS REDESIGNED LOGIN SUITE VERIFICATION\n";
+echo "   VERITOLYTICS SIMPLE LOGIN SUITE VERIFICATION\n";
 echo "============================================================\n\n";
 
 $passCount = 0;
@@ -33,42 +33,35 @@ if (session_status() === PHP_SESSION_ACTIVE) {
 }
 $_SESSION = [];
 
-// 1. TEST GET RENDERING
-echo "--- 1. Testing GET Request & Layout Structure ---\n";
+// 1. TEST GET RENDERING & CLEAN CENTERED LAYOUT
+echo "--- 1. Testing GET Request & Clean Centered Layout Structure ---\n";
 $_SERVER['REQUEST_METHOD'] = 'GET';
 ob_start();
 include __DIR__ . '/../auth/login.php';
 $html = ob_get_clean();
 
-assert_test("HTML contains auth-split-layout", str_contains($html, 'auth-split-layout'));
-assert_test("HTML contains auth-hero-section (69% width)", str_contains($html, 'auth-hero-section'));
-assert_test("HTML contains auth-form-section (31% width)", str_contains($html, 'auth-form-section'));
-assert_test("HTML references auth-hero-bg.jpg", str_contains($html, 'auth-hero-bg.jpg'));
-assert_test("HTML contains Glassmorphism card (auth-glass-card)", str_contains($html, 'auth-glass-card'));
-assert_test("Card contains 'Empowering Your Voice, Rewarding Your Time.'", str_contains($html, 'Empowering Your Voice, Rewarding Your Time.'));
-assert_test("Card contains 'Join thousands of professionals worldwide'", str_contains($html, 'Join thousands of professionals worldwide'));
-assert_test("Benefit 1: Instant Payouts via PayPal & Gift Cards", str_contains($html, 'Instant Payouts via PayPal &amp; Gift Cards'));
-assert_test("Benefit 2: Bank-Level Data Encryption & Privacy", str_contains($html, 'Bank-Level Data Encryption &amp; Privacy'));
-assert_test("Benefit 3: Exclusive Global B2B Research Studies", str_contains($html, 'Exclusive Global B2B Research Studies'));
-assert_test("Statistic 1: 5,000+ Early Members", str_contains($html, '5,000+') && str_contains($html, 'Early Members'));
-assert_test("Statistic 2: \$250+ Paid Daily", str_contains($html, '$250+') && str_contains($html, 'Paid Daily'));
-assert_test("Statistic 3: ISO 20252 Ready", str_contains($html, 'ISO 20252') && str_contains($html, 'Ready'));
+assert_test("HTML contains auth-centered-wrapper", str_contains($html, 'auth-centered-wrapper'));
+assert_test("HTML contains auth-card", str_contains($html, 'auth-card'));
+assert_test("HTML does NOT contain split-screen layout (auth-split-layout)", !str_contains($html, 'auth-split-layout'));
+assert_test("HTML does NOT contain hero section (auth-hero-section)", !str_contains($html, 'auth-hero-section'));
+assert_test("HTML does NOT reference auth-hero-bg.jpg", !str_contains($html, 'auth-hero-bg.jpg'));
+assert_test("HTML does NOT contain glassmorphism card (auth-glass-card)", !str_contains($html, 'auth-glass-card'));
+assert_test("HTML does NOT contain promotional statistics (5,000+, Paid Daily, ISO 20252)", !str_contains($html, '5,000+') && !str_contains($html, 'Paid Daily') && !str_contains($html, 'ISO 20252'));
+assert_test("HTML does NOT contain 'SECURE & VERIFIED PAYOUTS'", !str_contains($html, 'SECURE & VERIFIED PAYOUTS') && !str_contains($html, 'Secure &amp; Verified Payouts'));
+assert_test("HTML does NOT contain payment badges (Visa, Mastercard, Amazon, PayPal)", !str_contains($html, 'auth-payment-badges') && !str_contains($html, 'Visa') && !str_contains($html, 'Mastercard') && !str_contains($html, 'amazon') && !str_contains($html, 'PayPal'));
+assert_test("HTML does NOT contain 'OpinionPays'", !str_contains($html, 'OpinionPays'));
+assert_test("HTML does NOT contain 'Insightolytics LLC'", !str_contains($html, 'Insightolytics'));
 
-echo "\n--- 2. Testing Right Login Section & Form Elements ---\n";
-assert_test("Contains brand logo image", str_contains($html, 'veritopinion-logo.png') || str_contains($html, 'veritolytics-logo.png'));
-assert_test("Contains heading 'Welcome back'", str_contains($html, 'Welcome back'));
+echo "\n--- 2. Testing Veritolytics Logo & Form Elements ---\n";
+assert_test("Contains Veritolytics logo image at top", str_contains($html, 'veritolytics-logo.png'));
+assert_test("Contains heading 'Welcome Back'", str_contains($html, 'Welcome Back'));
 assert_test("Contains subtitle 'Please enter your details to sign in.'", str_contains($html, 'Please enter your details to sign in.'));
 assert_test("Contains Email Address field with placeholder", str_contains($html, 'placeholder="Enter your email address"'));
 assert_test("Contains Password field with toggle button", str_contains($html, 'btn-toggle-password'));
-assert_test("Contains 'Forgot password?' link pointing to auth/forgot-password.php", str_contains($html, 'Forgot password?') && str_contains($html, 'forgot-password.php'));
-assert_test("Contains primary 'Sign in' button", str_contains($html, 'Sign in'));
-assert_test("Contains 'Don\'t have an account? Sign up' pointing to auth/register.php", str_contains($html, 'Sign up') && str_contains($html, 'register.php'));
-assert_test("Does NOT contain 'SECURE & VERIFIED PAYOUTS'", !str_contains($html, 'SECURE & VERIFIED PAYOUTS') && !str_contains($html, 'Secure &amp; Verified Payouts'));
-assert_test("Does NOT contain payment badges in footer (Visa, Mastercard, Amazon, auth-payment-badges)", !str_contains($html, 'auth-payment-badges') && !str_contains($html, 'Visa') && !str_contains($html, 'Mastercard') && !str_contains($html, 'amazon'));
+assert_test("Contains 'Forgot Password?' link pointing to auth/forgot-password.php", str_contains($html, 'Forgot Password?') && str_contains($html, 'forgot-password.php'));
+assert_test("Contains primary 'Sign In' button", str_contains($html, 'Sign In'));
+assert_test("Contains 'Don\'t have an account? Sign Up' pointing to auth/register.php", str_contains($html, 'Sign Up') && str_contains($html, 'register.php'));
 assert_test("Contains footer copyright '© 2026 Veritolytics. All Rights Reserved.'", str_contains($html, '© 2026 Veritolytics. All Rights Reserved.'));
-assert_test("Does NOT contain 'OpinionPays'", !str_contains($html, 'OpinionPays'));
-assert_test("Does NOT contain 'Insightolytics LLC'", !str_contains($html, 'Insightolytics'));
-assert_test("Does NOT contain Privacy Policy or Terms in footer", !str_contains($html, 'Privacy Policy') && !str_contains($html, 'Terms of Service'));
 
 echo "\n--- 3. Testing Authentication Handlers ---\n";
 
@@ -109,22 +102,6 @@ $html_invalid = ob_get_clean();
 assert_test("Invalid password rejected safely", str_contains($html_invalid, 'Invalid email address or password'));
 
 // Test 3.4: Valid Member Authentication
-$valid_token = generate_csrf_token();
-$_POST = [
-    'csrf_token' => $valid_token,
-    'email' => 'member@veritopinion.com',
-    'password' => 'Member@12345'
-];
-
-// Seed member if needed
-$db = get_db();
-$check = $db->prepare("SELECT id FROM users WHERE email = :email");
-$check->execute([':email' => 'member@veritopinion.com']);
-if (!$check->fetch()) {
-    $db->prepare("INSERT INTO users (first_name, last_name, email, password_hash, role, status, balance_points, created_at, updated_at) VALUES ('Alex', 'Mercer', 'member@veritopinion.com', :hash, 'member', 'active', 500, datetime('now'), datetime('now'))")
-       ->execute([':hash' => password_hash('Member@12345', PASSWORD_DEFAULT)]);
-}
-
 $tmp_sub = sys_get_temp_dir() . '/test_login_sub.php';
 $repo_dir = str_replace('\\', '/', dirname(__DIR__));
 $login_script = "
@@ -155,7 +132,7 @@ $out = shell_exec("C:\\xampp\\php\\php.exe -d extension=gd \"{$tmp_sub}\" 2>&1")
 assert_test("Valid member authenticates and initializes session", str_contains((string)$out, 'AUTH_SUCCESS_USER_ID:'));
 
 echo "\n============================================================\n";
-echo "REDESIGNED LOGIN RESULTS: $passCount Passed, $failCount Failed\n";
+echo "SIMPLE LOGIN RESULTS: $passCount Passed, $failCount Failed\n";
 echo "============================================================\n";
 
 if ($failCount > 0) exit(1);

@@ -33,22 +33,7 @@ function get_app_secret(): string {
         return $secret;
     }
 
-    $secretFile = dirname(__DIR__) . '/config/.app_secret';
-    if (file_exists($secretFile)) {
-        $fileContent = trim((string)@file_get_contents($secretFile));
-        if (!empty($fileContent)) {
-            $secret = $fileContent;
-            return $secret;
-        }
-    }
-
-    $newSecret = bin2hex(random_bytes(32));
-    @file_put_contents($secretFile, $newSecret);
-    if (file_exists($secretFile)) {
-        $secret = $newSecret;
-        return $secret;
-    }
-
+    // Fallback deterministic secret constant guaranteed identical across all container replicas
     $secret = hash('sha256', 'VERITOLYTICS_PLATFORM_CORE_SECRET_SALT_2026_EST2017');
     return $secret;
 }

@@ -193,6 +193,20 @@ CREATE TABLE `support_tickets` (
   CONSTRAINT `fk_tickets_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- ------------------------------------------------------------------------------
+-- 9. SESSIONS TABLE (Serverless & Distributed PHP Session Persistence)
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `sessions` (
+  `id` VARCHAR(128) NOT NULL PRIMARY KEY,
+  `user_id` INT DEFAULT NULL,
+  `ip_address` VARCHAR(45) DEFAULT NULL,
+  `user_agent` VARCHAR(255) DEFAULT NULL,
+  `data` MEDIUMTEXT NOT NULL,
+  `last_activity` INT UNSIGNED NOT NULL,
+  INDEX `idx_sessions_last_activity` (`last_activity`),
+  INDEX `idx_sessions_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 -- ==============================================================================
 -- REALISTIC SEED DATA (CLEARLY LABELED DEMO DATA)
 -- ==============================================================================

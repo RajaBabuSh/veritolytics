@@ -136,6 +136,17 @@ CREATE TABLE IF NOT EXISTS support_tickets (
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE SET NULL
 );
 
+CREATE TABLE IF NOT EXISTS sessions (
+  id TEXT PRIMARY KEY,
+  user_id INTEGER DEFAULT NULL,
+  ip_address TEXT DEFAULT NULL,
+  user_agent TEXT DEFAULT NULL,
+  data TEXT NOT NULL,
+  last_activity INTEGER NOT NULL
+);
+CREATE INDEX IF NOT EXISTS idx_sessions_last_activity ON sessions (last_activity);
+CREATE INDEX IF NOT EXISTS idx_sessions_user_id ON sessions (user_id);
+
 -- SEED DATA
 INSERT OR IGNORE INTO users (id, first_name, last_name, email, password_hash, country, phone, date_of_birth, gender, employment_status, annual_income, education_level, role, status, balance_points, lifetime_earnings_usd, completed_surveys_count, profile_completion_pct)
 VALUES 

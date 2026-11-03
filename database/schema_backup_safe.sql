@@ -168,6 +168,20 @@ CREATE TABLE `support_tickets` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------------------------
+-- 8. SESSIONS TABLE (Serverless Distributed Storage)
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `sessions` (
+  `id` VARCHAR(128) NOT NULL PRIMARY KEY,
+  `user_id` INT DEFAULT NULL,
+  `ip_address` VARCHAR(45) DEFAULT NULL,
+  `user_agent` VARCHAR(255) DEFAULT NULL,
+  `data` MEDIUMTEXT NOT NULL,
+  `last_activity` INT UNSIGNED NOT NULL,
+  INDEX `idx_sessions_last_activity` (`last_activity`),
+  INDEX `idx_sessions_user_id` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------------------------
 -- SEED REWARDS
 -- ------------------------------------------------------------------------------
 INSERT INTO `rewards` (`id`, `title`, `category`, `points_required`, `cash_equivalent_usd`, `delivery_type`, `icon`, `is_active`) VALUES

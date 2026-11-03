@@ -27,18 +27,11 @@ if (!defined('VERITOLYTICS_INIT')) {
         $_SERVER['REQUEST_METHOD'] = 'GET';
     }
 
-    // Dedicated session storage to ensure seamless operation across all environments
-    $projectSessionDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'sessions';
-    if (!is_dir($projectSessionDir)) {
-        @mkdir($projectSessionDir, 0777, true);
-    }
-    if (is_dir($projectSessionDir) && is_writable($projectSessionDir)) {
-        ini_set('session.save_path', $projectSessionDir);
-    } else {
-        $tempDir = sys_get_temp_dir();
-        if (is_dir($tempDir) && is_writable($tempDir)) {
-            ini_set('session.save_path', $tempDir);
-        }
+    // Prevent intermediate proxies and browsers from caching dynamic forms and CSRF tokens
+    if (!headers_sent() && php_sapi_name() !== 'cli') {
+        header('Cache-Control: no-cache, no-store, must-revalidate, max-age=0');
+        header('Pragma: no-cache');
+        header('Expires: 0');
     }
 
     // Check for HTTPS directly or via reverse proxy headers (Vercel / Cloudflare / Load Balancers)
@@ -46,10 +39,12 @@ if (!defined('VERITOLYTICS_INIT')) {
                (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') ||
                (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower($_SERVER['HTTP_X_FORWARDED_SSL']) === 'on') ||
                (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443) ||
-               (isset($_SERVER['HTTP_CF_VISITOR']) && strpos($_SERVER['HTTP_CF_VISITOR'], 'https') !== false);
+               (isset($_SERVER['HTTP_CF_VISITOR']) && strpos($_SERVER['HTTP_CF_VISITOR'], 'https') !== false) ||
+               (isset($_SERVER['VERCEL']) || isset($_SERVER['HTTP_X_VERCEL_ID']));
 
-    // Secure Session Settings
+    // Secure Session Settings & Centralized Database Session Storage
     if (session_status() === PHP_SESSION_NONE) {
+        // Enforce secure cookie attributes
         $cookieParams = [
             'lifetime' => 86400 * 7, // 7 days
             'path' => '/',
@@ -59,6 +54,36 @@ if (!defined('VERITOLYTICS_INIT')) {
             'samesite' => 'Lax'
         ];
         session_set_cookie_params($cookieParams);
+
+        // Security ini flags
+        ini_set('session.use_strict_mode', '1');
+        ini_set('session.use_only_cookies', '1');
+        ini_set('session.gc_maxlifetime', (string)(86400 * 7));
+
+        // Connect Database-Backed Session Handler (MySQL / SQLite)
+        try {
+            require_once __DIR__ . '/database.php';
+            require_once __DIR__ . '/../includes/DatabaseSessionHandler.php';
+            $db = Database::getConnection();
+            $sessionHandler = new DatabaseSessionHandler($db, 86400 * 7);
+            session_set_save_handler($sessionHandler, true);
+        } catch (Throwable $e) {
+            error_log("Veritolytics Session Handler Notice: " . $e->getMessage());
+            // Fallback to local session storage if database is temporarily unavailable
+            $projectSessionDir = dirname(__DIR__) . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR . 'sessions';
+            if (!is_dir($projectSessionDir)) {
+                @mkdir($projectSessionDir, 0777, true);
+            }
+            if (is_dir($projectSessionDir) && is_writable($projectSessionDir)) {
+                ini_set('session.save_path', $projectSessionDir);
+            } else {
+                $tempDir = sys_get_temp_dir();
+                if (is_dir($tempDir) && is_writable($tempDir)) {
+                    ini_set('session.save_path', $tempDir);
+                }
+            }
+        }
+
         @session_start();
     }
 

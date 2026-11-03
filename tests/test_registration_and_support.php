@@ -74,8 +74,12 @@ $testCountry = 'Canada';
 
 // Test duplicate email check logic
 $dupStmt = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(:email)");
-$dupStmt->execute([':email' => 'member@veritolytics.com']);
+$dupStmt->execute([':email' => 'member@veritopinion.com']);
 $existingUser = $dupStmt->fetch();
+if (!$existingUser) {
+    $dupStmt->execute([':email' => 'member@veritolytics.com']);
+    $existingUser = $dupStmt->fetch();
+}
 assert_test("Pre-existing user email detected by duplicate validator", !empty($existingUser));
 
 // Perform Registration Workflow

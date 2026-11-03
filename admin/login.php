@@ -34,6 +34,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([':email' => $email]);
             $user = $stmt->fetch();
 
+            // Seamless alias matching between @veritopinion.com and legacy @veritolytics.com
+            if (!$user) {
+                $altEmail = str_ends_with($email, '@veritolytics.com') 
+                    ? str_replace('@veritolytics.com', '@veritopinion.com', $email)
+                    : (str_ends_with($email, '@veritopinion.com') ? str_replace('@veritopinion.com', '@veritolytics.com', $email) : null);
+                if ($altEmail) {
+                    $stmt->execute([':email' => $altEmail]);
+                    $user = $stmt->fetch();
+                }
+            }
+
             if ($user && password_verify($password, $user['password_hash'])) {
                 if ($user['role'] !== 'admin') {
                     $error = 'Access restricted: This account does not possess administrator credentials. Please sign in via the Member Portal.';
@@ -79,7 +90,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <i class="bi bi-key-fill text-warning"></i> Demo Administrator Account:
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-1">
-                        <span><strong>Email:</strong> <code>admin@veritolytics.com</code></span>
+                        <span><strong>Email:</strong> <code>admin@veritopinion.com</code></span>
                         <span><code>Admin@12345</code></span>
                     </div>
                 </div>
@@ -91,7 +102,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <label class="form-label fw-semibold small text-muted">Admin Email</label>
                         <div class="input-group">
                             <span class="input-group-text bg-light border-end-0 text-muted"><i class="bi bi-envelope"></i></span>
-                            <input type="email" name="email" class="form-control border-start-0 ps-0" placeholder="admin@veritolytics.com" value="<?= e($email) ?>" required autofocus>
+                            <input type="email" name="email" class="form-control border-start-0 ps-0" placeholder="admin@veritopinion.com" value="<?= e($email) ?>" required autofocus>
                         </div>
                     </div>
 

@@ -168,7 +168,7 @@ $initials = strtoupper(substr($user['first_name'], 0, 1) . substr($user['last_na
                     <i class="bi bi-box-arrow-right fs-3"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-1">Sign Out?</h5>
-                <p class="text-muted small mb-4">Are you sure you want to end your Veritolytics session?</p>
+                <p class="text-muted small mb-4">Are you sure you want to end your Veritopinion session?</p>
                 <div class="d-flex gap-2 justify-content-center">
                     <button type="button" class="btn btn-light rounded-3 px-3 w-50" data-bs-dismiss="modal">Cancel</button>
                     <a href="<?= BASE_URL ?>/auth/logout.php" class="btn btn-danger rounded-3 px-3 w-50 fw-semibold">Log Out</a>

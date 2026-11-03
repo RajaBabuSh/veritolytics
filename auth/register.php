@@ -12,7 +12,7 @@ require_once __DIR__ . '/../includes/auth_check.php';
 
 require_guest();
 
-$pageTitle = 'Join Veritolytics Panel | 500 Welcome Points';
+$pageTitle = 'Join Veritopinion Panel | 500 Welcome Points';
 $error = '';
 $firstName = '';
 $lastName = '';

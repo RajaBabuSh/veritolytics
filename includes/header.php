@@ -179,7 +179,7 @@ if ($currentUser) {
         <div class="collapse navbar-collapse order-lg-2" id="navbarMain">
             <ul class="navbar-nav mx-auto mb-2 mb-lg-0 fw-medium gap-lg-1">
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/#home">Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/#why-us">Why Veritolytics</a></li>
+                <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/#why-us">Why Veritopinion</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/#how-it-works">How It Works</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/#rewards">Rewards</a></li>
                 <li class="nav-item"><a class="nav-link" href="<?= BASE_URL ?>/#categories">Categories</a></li>
@@ -199,7 +199,7 @@ if ($currentUser) {
                     <i class="bi bi-box-arrow-right fs-3"></i>
                 </div>
                 <h5 class="fw-bold text-dark mb-1">Sign Out?</h5>
-                <p class="text-muted small mb-4">Are you sure you want to end your Veritolytics session?</p>
+                <p class="text-muted small mb-4">Are you sure you want to end your Veritopinion session?</p>
                 <div class="d-flex gap-2 justify-content-center">
                     <button type="button" class="btn btn-light rounded-3 px-3 w-50" data-bs-dismiss="modal">Cancel</button>
                     <a href="<?= BASE_URL ?>/auth/logout.php" class="btn btn-danger rounded-3 px-3 w-50 fw-semibold">Log Out</a>

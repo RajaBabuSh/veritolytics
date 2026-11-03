@@ -31,6 +31,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $stmt->execute([':email' => $email]);
             $user = $stmt->fetch();
 
+            // Seamless alias matching between @veritopinion.com and legacy @veritolytics.com
+            if (!$user) {
+                $altEmail = str_ends_with($email, '@veritolytics.com') 
+                    ? str_replace('@veritolytics.com', '@veritopinion.com', $email)
+                    : (str_ends_with($email, '@veritopinion.com') ? str_replace('@veritopinion.com', '@veritolytics.com', $email) : null);
+                if ($altEmail) {
+                    $stmt->execute([':email' => $altEmail]);
+                    $user = $stmt->fetch();
+                }
+            }
+
             if ($user && password_verify($password, $user['password_hash'])) {
                 if (!empty($user['deleted_at'])) {
                     $error = 'This account has been deactivated. Please contact support@veritopinion.com.';
@@ -80,7 +91,7 @@ require_once __DIR__ . '/../includes/header.php';
                         <i class="bi bi-info-circle-fill"></i> Pre-Configured Demo Credentials:
                     </div>
                     <div class="d-flex justify-content-between align-items-center mt-1">
-                        <span><strong>Member:</strong> <code>member@veritolytics.com</code></span>
+                        <span><strong>Member:</strong> <code>member@veritopinion.com</code></span>
                         <span><code>Member@12345</code></span>
                     </div>
                 </div>

@@ -30,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $rewardUsd = (float)($_POST['reward_usd'] ?? 1.00);
         $duration = (int)($_POST['duration_minutes'] ?? 5);
         $quota = (int)($_POST['quota'] ?? 100);
-        $provider = trim($_POST['provider'] ?? 'Veritolytics Direct');
+        $provider = trim($_POST['provider'] ?? 'Veritopinion Direct');
 
         if (empty($title)) {
             flash('danger', 'Survey Title is required.');
@@ -214,7 +214,7 @@ require_once __DIR__ . '/../includes/admin_header.php';
                                 </div>
                                 <div class="col-md-6">
                                     <label class="form-label fw-semibold small text-muted">Research Sponsor / Provider</label>
-                                    <input type="text" name="provider" class="form-control rounded-3" value="Veritolytics Direct" required>
+                                    <input type="text" name="provider" class="form-control rounded-3" value="Veritopinion Direct" required>
                                 </div>
                             </div>
 

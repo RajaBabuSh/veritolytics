@@ -191,7 +191,7 @@ function is_admin(): bool {
 function require_login(): array {
     if (!is_logged_in() || current_user() === null) {
         $_SESSION['return_to'] = $_SERVER['REQUEST_URI'];
-        flash('warning', 'Please sign in to access your Veritolytics member portal.');
+        flash('warning', 'Please sign in to access your Veritopinion member portal.');
         redirect('/auth/login.php');
     }
     return current_user();

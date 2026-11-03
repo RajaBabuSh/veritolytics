@@ -9,7 +9,7 @@ if (!defined('VERITOLYTICS_INIT')) {
     define('VERITOLYTICS_INIT', true);
 
     // Application Metadata
-    define('APP_NAME', 'VERITOPINION');
+    define('APP_NAME', 'Veritopinion');
     define('APP_TAGLINE', 'Your Voice. Your Opinions. Your Impact.');
     define('APP_VERSION', '1.0.0');
 

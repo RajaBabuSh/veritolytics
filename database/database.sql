@@ -73,7 +73,7 @@ CREATE TABLE `surveys` (
   `quota` INT NOT NULL DEFAULT 100,
   `completed_count` INT NOT NULL DEFAULT 0,
   `status` ENUM('active', 'paused', 'completed', 'draft') NOT NULL DEFAULT 'active',
-  `provider` VARCHAR(100) NOT NULL DEFAULT 'Veritolytics Direct',
+  `provider` VARCHAR(100) NOT NULL DEFAULT 'Veritopinion Direct',
   `sample_questions_json` TEXT DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
@@ -233,15 +233,15 @@ CREATE TABLE IF NOT EXISTS `sessions` (
 -- REALISTIC SEED DATA (CLEARLY LABELED DEMO DATA)
 -- ==============================================================================
 
--- Admin Credentials: admin@veritolytics.com / Admin@12345
--- Member Credentials: member@veritolytics.com / Member@12345
+-- Admin Credentials: admin@veritopinion.com / Admin@12345
+-- Member Credentials: member@veritopinion.com / Member@12345
 INSERT INTO `users` (
   `id`, `first_name`, `last_name`, `email`, `password_hash`, `country`, `phone`, 
   `date_of_birth`, `gender`, `employment_status`, `annual_income`, `education_level`, 
   `role`, `status`, `balance_points`, `lifetime_earnings_usd`, `completed_surveys_count`, `profile_completion_pct`
 ) VALUES
-(1, 'System', 'Administrator', 'admin@veritolytics.com', '$2y$10$swdq8ywEpnzd9TgqxQAHu.dp6n/whKucIHMKWAosbdE/M7nkAovjK', 'United States', '+1-555-0199', '1985-05-15', 'Male', 'Executive / Senior Manager', '$150,000+', 'Master\'s Degree', 'admin', 'active', 5000, 50.00, 10, 100),
-(2, 'Alex', 'Morgan', 'member@veritolytics.com', '$2y$10$MU3NL3tpULHqARBsuFG9ROd3aYkSX01tock/WYHEygBKZzZ5UhKBC', 'United States', '+1-555-0142', '1992-08-22', 'Female', 'Employed Full-Time', '$75,000 - $99,999', 'Bachelor\'s Degree', 'member', 'active', 1650, 16.50, 4, 85);
+(1, 'System', 'Administrator', 'admin@veritopinion.com', '$2y$10$swdq8ywEpnzd9TgqxQAHu.dp6n/whKucIHMKWAosbdE/M7nkAovjK', 'United States', '+1-555-0199', '1985-05-15', 'Male', 'Executive / Senior Manager', '$150,000+', 'Master\'s Degree', 'admin', 'active', 5000, 50.00, 10, 100),
+(2, 'Alex', 'Morgan', 'member@veritopinion.com', '$2y$10$MU3NL3tpULHqARBsuFG9ROd3aYkSX01tock/WYHEygBKZzZ5UhKBC', 'United States', '+1-555-0142', '1992-08-22', 'Female', 'Employed Full-Time', '$75,000 - $99,999', 'Bachelor\'s Degree', 'member', 'active', 1650, 16.50, 4, 85);
 
 -- SEED REWARDS
 INSERT INTO `rewards` (`id`, `title`, `category`, `points_required`, `cash_equivalent_usd`, `delivery_type`, `icon`, `is_active`) VALUES
@@ -285,4 +285,4 @@ INSERT INTO `notifications` (`user_id`, `title`, `message`, `type`, `link`, `is_
 
 -- SEED SAMPLE SUPPORT TICKET
 INSERT INTO `support_tickets` (`ticket_number`, `user_id`, `name`, `email`, `subject`, `message`, `status`, `priority`, `admin_reply`, `created_at`) VALUES
-('TCK-2026-0814', 2, 'Alex Morgan', 'member@veritolytics.com', 'Question about PayPal redemption timeline', 'Hello support team! When I redeem PayPal cash, does it credit within 24 hours or on business days only?', 'resolved', 'normal', 'Hello Alex, thank you for reaching out! PayPal transfers are processed within 1 to 2 business days. Please ensure your PayPal email matches your payout destination.', DATE_SUB(NOW(), INTERVAL 2 DAY));
+('TCK-2026-0814', 2, 'Alex Morgan', 'member@veritopinion.com', 'Question about PayPal redemption timeline', 'Hello support team! When I redeem PayPal cash, does it credit within 24 hours or on business days only?', 'resolved', 'normal', 'Hello Alex, thank you for reaching out! PayPal transfers are processed within 1 to 2 business days. Please ensure your PayPal email matches your payout destination.', DATE_SUB(NOW(), INTERVAL 2 DAY));

@@ -29,29 +29,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         flash('danger', 'Please provide both a ticket subject and message description.');
     } else {
         $ticketNumber = 'TCK-' . date('Y') . '-' . str_pad((string)random_int(100, 9999), 4, '0', STR_PAD_LEFT);
-        $stmt = $db->prepare("
-            INSERT INTO support_tickets (ticket_number, user_id, name, email, subject, message, priority, status)
-            VALUES (:ticket_number, :user_id, :name, :email, :subject, :message, :priority, 'open')
-        ");
-        $stmt->execute([
-            ':ticket_number' => $ticketNumber,
-            ':user_id'       => $user['id'],
-            ':name'          => $user['first_name'] . ' ' . $user['last_name'],
-            ':email'         => $user['email'],
-            ':subject'       => $subject,
-            ':message'       => $message,
-            ':priority'      => $priority
-        ]);
+        try {
+            $stmt = $db->prepare("
+                INSERT INTO support_tickets (ticket_number, user_id, name, email, subject, message, priority, status)
+                VALUES (:ticket_number, :user_id, :name, :email, :subject, :message, :priority, 'open')
+            ");
+            $stmt->execute([
+                ':ticket_number' => $ticketNumber,
+                ':user_id'       => $user['id'],
+                ':name'          => $user['first_name'] . ' ' . $user['last_name'],
+                ':email'         => $user['email'],
+                ':subject'       => $subject,
+                ':message'       => $message,
+                ':priority'      => $priority
+            ]);
 
-        add_notification(
-            (int)$user['id'],
-            'Support Ticket Submitted',
-            'Your ticket #' . $ticketNumber . ' has been logged. Our panel support desk will respond shortly.',
-            'info',
-            '/member/support.php'
-        );
+            add_notification(
+                (int)$user['id'],
+                'Support Ticket Submitted',
+                'Your ticket #' . $ticketNumber . ' has been logged. Our panel support desk will respond shortly.',
+                'info',
+                '/member/support.php'
+            );
 
-        flash('success', "Your support inquiry ({$ticketNumber}) was submitted successfully. Our operations desk will review it shortly.");
+            flash('success', "Your support inquiry ({$ticketNumber}) was submitted successfully. Our operations desk will review it shortly.");
+        } catch (Throwable $e) {
+            error_log("Veritolytics member/support Error: " . $e->getMessage());
+            flash('danger', 'An error occurred while creating your ticket. Please try again later.');
+        }
         redirect('/member/support.php');
     }
 }

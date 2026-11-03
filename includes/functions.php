@@ -22,12 +22,16 @@ function redirect(string $path): void {
     if (!str_starts_with($path, 'http://') && !str_starts_with($path, 'https://')) {
         $path = BASE_URL . '/' . ltrim($path, '/');
     }
+    // Commit session to storage before redirecting to prevent race conditions
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        @session_write_close();
+    }
     header("Location: " . $path);
     exit();
 }
 
 /**
- * Set flash alert in session
+ * Set flash alert in session and synced cookie (for cross-instance Vercel resilience)
  */
 function flash(string $type, string $message): void {
     if (!isset($_SESSION['flashes'])) {
@@ -37,14 +41,51 @@ function flash(string $type, string $message): void {
         'type' => $type, // 'success', 'danger', 'warning', 'info'
         'message' => $message
     ];
+
+    if (!headers_sent()) {
+        $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
+                   (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https');
+        $payload = base64_encode((string)json_encode($_SESSION['flashes']));
+        setcookie('vy_flash', $payload, [
+            'expires' => time() + 300,
+            'path' => '/',
+            'domain' => '',
+            'secure' => $isHttps,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+    }
 }
 
 /**
- * Retrieve and clear flash alerts
+ * Retrieve and clear flash alerts (checks session + cookie fallback)
  */
 function get_flashes(): array {
     $flashes = $_SESSION['flashes'] ?? [];
     unset($_SESSION['flashes']);
+
+    if (empty($flashes) && !empty($_COOKIE['vy_flash'])) {
+        $raw = base64_decode($_COOKIE['vy_flash'], true);
+        if ($raw) {
+            $decoded = json_decode($raw, true);
+            if (is_array($decoded)) {
+                $flashes = $decoded;
+            }
+        }
+    }
+
+    if (!empty($_COOKIE['vy_flash']) && !headers_sent()) {
+        setcookie('vy_flash', '', [
+            'expires' => time() - 3600,
+            'path' => '/',
+            'domain' => '',
+            'secure' => false,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+        unset($_COOKIE['vy_flash']);
+    }
+
     return $flashes;
 }
 
@@ -128,37 +169,64 @@ function calculate_profile_completion(array $user): int {
  * Add an entry to the financial/points ledger
  */
 function add_transaction(int $userId, string $type, string $title, int $points, float $amountUsd, string $status = 'completed'): bool {
-    $db = get_db();
-    $stmt = $db->prepare("
-        INSERT INTO transactions (user_id, type, title, points, amount_usd, status)
-        VALUES (:user_id, :type, :title, :points, :amount_usd, :status)
-    ");
-    return $stmt->execute([
-        ':user_id' => $userId,
-        ':type' => $type,
-        ':title' => $title,
-        ':points' => $points,
-        ':amount_usd' => $amountUsd,
-        ':status' => $status
-    ]);
+    try {
+        $db = get_db();
+        $stmt = $db->prepare("
+            INSERT INTO transactions (user_id, type, title, points, amount_usd, status)
+            VALUES (:user_id, :type, :title, :points, :amount_usd, :status)
+        ");
+        return $stmt->execute([
+            ':user_id' => $userId,
+            ':type' => $type,
+            ':title' => $title,
+            ':points' => $points,
+            ':amount_usd' => $amountUsd,
+            ':status' => $status
+        ]);
+    } catch (Throwable $e) {
+        // Fallback for MySQL environments with strict enum differences (e.g. 'bonus' fallback)
+        try {
+            $fallbackType = ($type === 'welcome_bonus') ? 'bonus' : 'adjustment';
+            $stmt = $db->prepare("
+                INSERT INTO transactions (user_id, type, title, points, amount_usd, status)
+                VALUES (:user_id, :type, :title, :points, :amount_usd, :status)
+            ");
+            return $stmt->execute([
+                ':user_id' => $userId,
+                ':type' => $fallbackType,
+                ':title' => $title,
+                ':points' => $points,
+                ':amount_usd' => $amountUsd,
+                ':status' => $status
+            ]);
+        } catch (Throwable $e2) {
+            error_log("Veritolytics add_transaction Error: " . $e2->getMessage());
+            return false;
+        }
+    }
 }
 
 /**
  * Add in-app notification
  */
 function add_notification(int $userId, string $title, string $message, string $type = 'info', ?string $link = null): bool {
-    $db = get_db();
-    $stmt = $db->prepare("
-        INSERT INTO notifications (user_id, title, message, type, link, is_read)
-        VALUES (:user_id, :title, :message, :type, :link, 0)
-    ");
-    return $stmt->execute([
-        ':user_id' => $userId,
-        ':title' => $title,
-        ':message' => $message,
-        ':type' => $type,
-        ':link' => $link
-    ]);
+    try {
+        $db = get_db();
+        $stmt = $db->prepare("
+            INSERT INTO notifications (user_id, title, message, type, link, is_read)
+            VALUES (:user_id, :title, :message, :type, :link, 0)
+        ");
+        return $stmt->execute([
+            ':user_id' => $userId,
+            ':title' => $title,
+            ':message' => $message,
+            ':type' => $type,
+            ':link' => $link
+        ]);
+    } catch (Throwable $e) {
+        error_log("Veritolytics add_notification Error: " . $e->getMessage());
+        return false;
+    }
 }
 
 /**

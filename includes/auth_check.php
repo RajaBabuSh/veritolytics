@@ -7,9 +7,119 @@
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/functions.php';
+require_once __DIR__ . '/csrf.php';
+
+/**
+ * Persistently establish an authenticated user session across requests and containers
+ */
+function set_authenticated_session(int $userId, string $role = 'member', ?string $passwordHash = null): void {
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        @session_regenerate_id(true);
+    }
+    $_SESSION['user_id'] = $userId;
+    $_SESSION['user_role'] = $role;
+
+    if (!headers_sent()) {
+        try {
+            if (!$passwordHash) {
+                $db = get_db();
+                $stmt = $db->prepare("SELECT password_hash FROM users WHERE id = :id");
+                $stmt->execute([':id' => $userId]);
+                $passwordHash = (string)$stmt->fetchColumn();
+            }
+            $hashSnippet = substr((string)$passwordHash, 0, 16);
+            $expiry = time() + (86400 * 30); // 30-day token
+            $signature = hash_hmac('sha256', "{$userId}:{$expiry}:{$hashSnippet}", get_app_secret());
+            $tokenPayload = base64_encode("{$userId}:{$expiry}:{$signature}");
+
+            $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
+                       (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https');
+
+            setcookie('vy_auth_token', $tokenPayload, [
+                'expires' => $expiry,
+                'path' => '/',
+                'domain' => '',
+                'secure' => $isHttps,
+                'httponly' => true,
+                'samesite' => 'Lax'
+            ]);
+        } catch (Throwable $e) {
+            // Silently allow session-only login if cookie fails
+        }
+    }
+}
+
+/**
+ * Safely tear down user session and remove persistent auth cookies
+ */
+function clear_authenticated_session(): void {
+    $_SESSION = [];
+    if (ini_get("session.use_cookies") && !headers_sent()) {
+        $params = session_get_cookie_params();
+        setcookie(
+            session_name(),
+            '',
+            time() - 42000,
+            $params["path"],
+            $params["domain"],
+            $params["secure"],
+            $params["httponly"]
+        );
+    }
+    if (!headers_sent()) {
+        setcookie('vy_auth_token', '', [
+            'expires' => time() - 42000,
+            'path' => '/',
+            'domain' => '',
+            'secure' => false,
+            'httponly' => true,
+            'samesite' => 'Lax'
+        ]);
+    }
+    unset($_COOKIE['vy_auth_token']);
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        @session_destroy();
+    }
+}
 
 function is_logged_in(): bool {
-    return !empty($_SESSION['user_id']);
+    if (!empty($_SESSION['user_id'])) {
+        return true;
+    }
+
+    // Serverless container cross-instance recovery via signed auth cookie
+    if (!empty($_COOKIE['vy_auth_token'])) {
+        $raw = base64_decode($_COOKIE['vy_auth_token'], true);
+        if ($raw && str_contains($raw, ':')) {
+            $parts = explode(':', $raw);
+            if (count($parts) === 3) {
+                [$uId, $expiry, $sig] = $parts;
+                $uId = (int)$uId;
+                $exp = (int)$expiry;
+                if ($uId > 0 && $exp > time()) {
+                    try {
+                        $db = get_db();
+                        $stmt = $db->prepare("SELECT id, role, status, password_hash FROM users WHERE id = :id");
+                        $stmt->execute([':id' => $uId]);
+                        $u = $stmt->fetch();
+                        if ($u && $u['status'] !== 'suspended') {
+                            $hashSnippet = substr((string)$u['password_hash'], 0, 16);
+                            $expectedSig = hash_hmac('sha256', "{$uId}:{$exp}:{$hashSnippet}", get_app_secret());
+                            if (hash_equals($expectedSig, $sig)) {
+                                $_SESSION['user_id'] = (int)$u['id'];
+                                $_SESSION['user_role'] = $u['role'];
+                                return true;
+                            }
+                        }
+                    } catch (Throwable $e) {
+                        // DB error or table not ready
+                    }
+                }
+            }
+        }
+    }
+
+    return false;
 }
 
 function current_user(): ?array {
@@ -65,8 +175,7 @@ function current_user(): ?array {
 
     if (!$user || $user['status'] === 'suspended') {
         // Invalidate session if user was deleted or suspended
-        unset($_SESSION['user_id'], $_SESSION['user_role']);
-        session_destroy();
+        clear_authenticated_session();
         return null;
     }
 

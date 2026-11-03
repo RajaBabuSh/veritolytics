@@ -40,9 +40,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 } elseif ($user['status'] === 'suspended') {
                     $error = 'This administrative account has been suspended.';
                 } else {
-                    session_regenerate_id(true);
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_role'] = 'admin';
+                    set_authenticated_session((int)$user['id'], 'admin', (string)$user['password_hash']);
 
                     flash('success', "Welcome, Administrator {$user['first_name']}.");
                     redirect('/admin/dashboard.php');

@@ -47,6 +47,54 @@ class Database {
 
             self::$instance = new PDO($dsn, $user, $pass, $options);
             self::$driver = 'mysql';
+
+            // Auto-migrate missing columns for MySQL to ensure complete schema parity across environments
+            try {
+                $cols = self::$instance->query("SHOW COLUMNS FROM `users`")->fetchAll(PDO::FETCH_COLUMN, 0);
+                $requiredCols = [
+                    'pending_email' => 'VARCHAR(191) DEFAULT NULL',
+                    'email_verification_token' => 'VARCHAR(255) DEFAULT NULL',
+                    'email_verification_expires_at' => 'DATETIME DEFAULT NULL',
+                    'state' => 'VARCHAR(100) DEFAULT NULL',
+                    'city' => 'VARCHAR(100) DEFAULT NULL',
+                    'avatar' => 'VARCHAR(255) DEFAULT NULL',
+                    'notification_preferences' => 'TEXT DEFAULT NULL',
+                ];
+                foreach ($requiredCols as $colName => $colDef) {
+                    if (!in_array($colName, $cols)) {
+                        self::$instance->exec("ALTER TABLE `users` ADD COLUMN `{$colName}` {$colDef}");
+                    }
+                }
+            } catch (Throwable $migrateEx) {
+                // Table might be initializing
+            }
+
+            // Ensure support_tickets table exists on MySQL
+            try {
+                self::$instance->query("SELECT 1 FROM `support_tickets` LIMIT 1");
+            } catch (Throwable $tblEx) {
+                try {
+                    self::$instance->exec("
+                        CREATE TABLE IF NOT EXISTS `support_tickets` (
+                          `id` INT AUTO_INCREMENT PRIMARY KEY,
+                          `ticket_number` VARCHAR(50) NOT NULL UNIQUE,
+                          `user_id` INT DEFAULT NULL,
+                          `name` VARCHAR(100) NOT NULL,
+                          `email` VARCHAR(191) NOT NULL,
+                          `subject` VARCHAR(255) NOT NULL,
+                          `message` TEXT NOT NULL,
+                          `status` ENUM('open', 'in_review', 'resolved') NOT NULL DEFAULT 'open',
+                          `priority` ENUM('normal', 'high', 'urgent') NOT NULL DEFAULT 'normal',
+                          `admin_reply` TEXT DEFAULT NULL,
+                          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                          `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                          INDEX `idx_tickets_user` (`user_id`),
+                          INDEX `idx_tickets_status` (`status`)
+                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                    ");
+                } catch (Throwable $createEx) {}
+            }
+
             return self::$instance;
         } catch (PDOException $e) {
             // Log MySQL error if an external database host was configured
@@ -66,6 +114,8 @@ class Database {
                 ];
                 self::$instance = new PDO($dsn, null, null, $options);
                 self::$instance->exec('PRAGMA foreign_keys = ON;');
+                self::$instance->exec('PRAGMA journal_mode = WAL;');
+                self::$instance->exec('PRAGMA busy_timeout = 5000;');
                 self::$driver = 'sqlite';
 
                 // Initialize schema if new
@@ -110,6 +160,10 @@ class Database {
             self::getConnection();
         }
         return self::$driver;
+    }
+
+    public static function closeConnection(): void {
+        self::$instance = null;
     }
 }
 

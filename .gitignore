@@ -11,6 +11,8 @@
 *.key
 *.cert
 *.crt
+.app_secret
+config/.app_secret
 
 # Local Configuration Overrides
 config/*.local.php

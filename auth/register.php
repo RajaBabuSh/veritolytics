@@ -48,43 +48,47 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = 'You must agree to the Terms of Service and Privacy Policy to register.';
         } else {
             $db = get_db();
-            // Check if email already exists
-            $stmt = $db->prepare("SELECT id FROM users WHERE email = :email");
-            $stmt->execute([':email' => $email]);
-            if ($stmt->fetch()) {
-                $error = 'An account with this email address already exists. Please sign in instead.';
-            } else {
-                $hash = password_hash($password, PASSWORD_DEFAULT);
-                $welcomeBonus = WELCOME_BONUS_POINTS;
-                $welcomeUsd = $welcomeBonus / POINTS_PER_USD;
+            try {
+                // Check if email already exists (case-insensitive)
+                $stmt = $db->prepare("SELECT id FROM users WHERE LOWER(email) = LOWER(:email)");
+                $stmt->execute([':email' => $email]);
+                if ($stmt->fetch()) {
+                    $error = 'An account with this email address already exists. Please sign in instead.';
+                } else {
+                    $db->beginTransaction();
 
-                $insertStmt = $db->prepare("
-                    INSERT INTO users (
-                        first_name, last_name, email, password_hash, country, 
-                        role, status, balance_points, lifetime_earnings_usd, profile_completion_pct
-                    ) VALUES (
-                        :first_name, :last_name, :email, :password_hash, :country,
-                        'member', 'active', :balance_points, :lifetime_earnings_usd, 35
-                    )
-                ");
+                    $hash = password_hash($password, PASSWORD_DEFAULT);
+                    $welcomeBonus = WELCOME_BONUS_POINTS;
+                    $welcomeUsd = (float)($welcomeBonus / POINTS_PER_USD);
 
-                $success = $insertStmt->execute([
-                    ':first_name' => $firstName,
-                    ':last_name' => $lastName,
-                    ':email' => $email,
-                    ':password_hash' => $hash,
-                    ':country' => $country,
-                    ':balance_points' => $welcomeBonus,
-                    ':lifetime_earnings_usd' => $welcomeUsd,
-                ]);
+                    $insertStmt = $db->prepare("
+                        INSERT INTO users (
+                            first_name, last_name, email, password_hash, country, 
+                            role, status, balance_points, lifetime_earnings_usd,
+                            completed_surveys_count, profile_completion_pct
+                        ) VALUES (
+                            :first_name, :last_name, :email, :password_hash, :country,
+                            'member', 'active', :balance_points, :lifetime_earnings_usd,
+                            0, 35
+                        )
+                    ");
 
-                if ($success) {
+                    $insertStmt->execute([
+                        ':first_name' => $firstName,
+                        ':last_name' => $lastName,
+                        ':email' => strtolower($email),
+                        ':password_hash' => $hash,
+                        ':country' => $country,
+                        ':balance_points' => $welcomeBonus,
+                        ':lifetime_earnings_usd' => $welcomeUsd,
+                    ]);
+
                     $newUserId = (int)$db->lastInsertId();
 
-                    // Credit Welcome Bonus Transaction
+                    // Credit Welcome Bonus Transaction (500 pts / $5.00)
                     add_transaction($newUserId, 'welcome_bonus', 'Welcome Bonus - Account Registered', $welcomeBonus, $welcomeUsd);
 
-                    // Send Welcome Notification
+                    // Send Welcome In-App Notification
                     add_notification(
                         $newUserId,
                         'Welcome to Veritolytics! 🎉',
@@ -93,16 +97,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         '/member/wallet.php'
                     );
 
-                    // Auto-login
-                    session_regenerate_id(true);
-                    $_SESSION['user_id'] = $newUserId;
-                    $_SESSION['user_role'] = 'member';
+                    $db->commit();
+
+                    // Establish session and persistent authentication
+                    set_authenticated_session($newUserId, 'member', $hash);
 
                     flash('success', "Welcome to Veritolytics, {$firstName}! 500 Welcome Points have been added to your wallet.");
                     redirect('/member/dashboard.php');
-                } else {
-                    $error = 'Unable to complete registration. Please try again.';
                 }
+            } catch (PDOException $e) {
+                if ($db->inTransaction()) {
+                    $db->rollBack();
+                }
+                if ($e->getCode() == 23000 || str_contains($e->getMessage(), 'Duplicate entry') || str_contains($e->getMessage(), 'UNIQUE constraint failed')) {
+                    $error = 'An account with this email address already exists. Please sign in instead.';
+                } else {
+                    error_log("Veritolytics Registration Error: " . $e->getMessage());
+                    $error = 'Unable to complete registration due to a database error. Please try again.';
+                }
+            } catch (Throwable $e) {
+                if ($db->inTransaction()) {
+                    $db->rollBack();
+                }
+                error_log("Veritolytics Registration Exception: " . $e->getMessage());
+                $error = 'An unexpected error occurred during registration. Please try again.';
             }
         }
     }

@@ -35,10 +35,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 if ($user['status'] === 'suspended') {
                     $error = 'Your account has been suspended. Please contact support@veritolytics.com.';
                 } else {
-                    // Regenerate session ID to prevent fixation
-                    session_regenerate_id(true);
-                    $_SESSION['user_id'] = $user['id'];
-                    $_SESSION['user_role'] = $user['role'];
+                    set_authenticated_session((int)$user['id'], (string)$user['role'], (string)$user['password_hash']);
 
                     flash('success', "Welcome back, {$user['first_name']}!");
                     

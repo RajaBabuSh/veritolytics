@@ -32,15 +32,20 @@ if (!defined('VERITOLYTICS_INIT')) {
     if (!is_dir($projectSessionDir)) {
         @mkdir($projectSessionDir, 0777, true);
     }
-    if (is_dir($projectSessionDir)) {
+    if (is_dir($projectSessionDir) && is_writable($projectSessionDir)) {
         ini_set('session.save_path', $projectSessionDir);
     } else {
-        ini_set('session.save_path', sys_get_temp_dir());
+        $tempDir = sys_get_temp_dir();
+        if (is_dir($tempDir) && is_writable($tempDir)) {
+            ini_set('session.save_path', $tempDir);
+        }
     }
 
     // Check for HTTPS directly or via reverse proxy headers (Vercel / Cloudflare / Load Balancers)
     $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
                (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') ||
+               (isset($_SERVER['HTTP_X_FORWARDED_SSL']) && strtolower($_SERVER['HTTP_X_FORWARDED_SSL']) === 'on') ||
+               (isset($_SERVER['SERVER_PORT']) && (int)$_SERVER['SERVER_PORT'] === 443) ||
                (isset($_SERVER['HTTP_CF_VISITOR']) && strpos($_SERVER['HTTP_CF_VISITOR'], 'https') !== false);
 
     // Secure Session Settings
@@ -54,7 +59,7 @@ if (!defined('VERITOLYTICS_INIT')) {
             'samesite' => 'Lax'
         ];
         session_set_cookie_params($cookieParams);
-        session_start();
+        @session_start();
     }
 
     // Auto-detect Base URL for dynamic link generation

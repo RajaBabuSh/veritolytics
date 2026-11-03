@@ -6,29 +6,15 @@
 
 require_once __DIR__ . '/../config/app.php';
 require_once __DIR__ . '/../includes/functions.php';
+require_once __DIR__ . '/../includes/auth_check.php';
 
-// Unset all session variables
-$_SESSION = [];
-
-// Destroy session cookie if present
-if (ini_get("session.use_cookies")) {
-    $params = session_get_cookie_params();
-    setcookie(
-        session_name(),
-        '',
-        time() - 42000,
-        $params["path"],
-        $params["domain"],
-        $params["secure"],
-        $params["httponly"]
-    );
-}
-
-// Destroy session
-session_destroy();
+// Clear session and persistent authentication cookies
+clear_authenticated_session();
 
 // Start fresh session solely to carry logout flash message
-session_start();
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
 flash('info', 'You have been safely logged out. See you next time!');
 
 redirect('/auth/login.php');

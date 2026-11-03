@@ -666,7 +666,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <div class="auth-form-wrapper">
             <!-- Brand Logo -->
             <a href="<?= BASE_URL ?>/" title="Veritolytics Home" class="d-inline-block text-decoration-none">
-                <img src="<?= BASE_URL ?>/assets/images/veritopinion-logo.png" alt="Veritolytics" class="auth-brand-logo">
+                <img src="<?= BASE_URL ?>/assets/images/veritolytics-logo.png" alt="Veritolytics" class="auth-brand-logo">
             </a>
 
             <!-- Heading & Subtitle -->
@@ -782,7 +782,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
 
             <div class="auth-legal-text">
-                <div>© 2026 Veritolytics. Powered by Insightolytics LLC.</div>
+                <div>© 2026 Veritolytics. All Rights Reserved.</div>
                 <div class="mt-1">
                     <a href="<?= BASE_URL ?>/#faq">Privacy Policy</a>
                     <span class="mx-1">&middot;</span>

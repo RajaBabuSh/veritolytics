@@ -68,7 +68,8 @@ assert_test("Contains PayPal payment badge", str_contains($html, 'PayPal'));
 assert_test("Contains Visa payment badge", str_contains($html, 'Visa'));
 assert_test("Contains Mastercard payment badge", str_contains($html, 'Mastercard'));
 assert_test("Contains Amazon payment badge", str_contains($html, 'amazon'));
-assert_test("Contains footer copyright '© 2026 Veritolytics. Powered by Insightolytics LLC.'", str_contains($html, '© 2026 Veritolytics. Powered by Insightolytics LLC.'));
+assert_test("Contains footer copyright '© 2026 Veritolytics. All Rights Reserved.'", str_contains($html, '© 2026 Veritolytics. All Rights Reserved.'));
+assert_test("Does NOT contain 'Insightolytics LLC'", !str_contains($html, 'Insightolytics'));
 assert_test("Contains Privacy Policy & Terms of Service links", str_contains($html, 'Privacy Policy') && str_contains($html, 'Terms of Service'));
 
 echo "\n--- 3. Testing Authentication Handlers ---\n";

@@ -27,12 +27,24 @@ class Database {
         // Attempt 1: Connect to MySQL
         try {
             $dsn = "mysql:host={$host};port={$port};dbname={$dbname};charset=utf8mb4";
+            $timeout = (int)(getenv('DB_TIMEOUT') ?: ($host === '127.0.0.1' || $host === 'localhost' ? 2 : 5));
             $options = [
                 PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
                 PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
                 PDO::ATTR_EMULATE_PREPARES => false,
-                PDO::ATTR_TIMEOUT => 2, // short timeout for fallback check
+                PDO::ATTR_TIMEOUT => $timeout,
             ];
+
+            // Optional SSL/TLS configuration for Cloud MySQL (TiDB Cloud, Aiven, PlanetScale, Railway, AWS RDS)
+            if (getenv('DB_SSL') === 'true' || getenv('DB_SSL_CA')) {
+                if (getenv('DB_SSL_CA') && file_exists(getenv('DB_SSL_CA'))) {
+                    $options[PDO::MYSQL_ATTR_SSL_CA] = getenv('DB_SSL_CA');
+                }
+                if (getenv('DB_SSL_VERIFY') === 'false') {
+                    $options[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+                }
+            }
+
             self::$instance = new PDO($dsn, $user, $pass, $options);
             self::$driver = 'mysql';
             return self::$instance;

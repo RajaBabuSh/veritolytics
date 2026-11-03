@@ -1,0 +1,28 @@
+{
+    # Global options
+    auto_https off
+    frankenphp
+    order php_server before file_server
+}
+
+# Bind to Vercel's dynamic $PORT (defaulting to 8080)
+:{$PORT:8080} {
+    root * /app
+    encode zstd gzip
+
+    # Execute PHP files directly
+    php_server {
+        root /app
+        resolve_root_symlink
+    }
+
+    # Serve static assets (CSS, JS, images)
+    file_server
+
+    # Security headers
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options SAMEORIGIN
+        Referrer-Policy strict-origin-when-cross-origin
+    }
+}

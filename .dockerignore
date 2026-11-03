@@ -1,0 +1,22 @@
+# Ignore git and local environment files
+.git
+.gitignore
+.env
+.env.*
+node_modules
+dist
+
+# Crucial: Exclude legacy React prototype so Docker never includes or builds it
+legacy-react-prototype
+
+# Exclude local SQLite and sessions from container image
+*.sqlite
+*.sqlite3
+*.db
+database/*.sqlite
+database/*.sqlite3
+database/*.db
+uploads/sessions/*
+!uploads/sessions/.gitkeep
+uploads/avatars/*
+!uploads/avatars/.gitkeep

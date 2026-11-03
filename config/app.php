@@ -38,13 +38,18 @@ if (!defined('VERITOLYTICS_INIT')) {
         ini_set('session.save_path', sys_get_temp_dir());
     }
 
+    // Check for HTTPS directly or via reverse proxy headers (Vercel / Cloudflare / Load Balancers)
+    $isHttps = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ||
+               (isset($_SERVER['HTTP_X_FORWARDED_PROTO']) && strtolower($_SERVER['HTTP_X_FORWARDED_PROTO']) === 'https') ||
+               (isset($_SERVER['HTTP_CF_VISITOR']) && strpos($_SERVER['HTTP_CF_VISITOR'], 'https') !== false);
+
     // Secure Session Settings
     if (session_status() === PHP_SESSION_NONE) {
         $cookieParams = [
             'lifetime' => 86400 * 7, // 7 days
             'path' => '/',
             'domain' => '',
-            'secure' => isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on',
+            'secure' => $isHttps,
             'httponly' => true,
             'samesite' => 'Lax'
         ];
@@ -54,8 +59,8 @@ if (!defined('VERITOLYTICS_INIT')) {
 
     // Auto-detect Base URL for dynamic link generation
     if (!defined('BASE_URL')) {
-        $protocol = (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') ? 'https://' : 'http://';
-        $host = $_SERVER['HTTP_HOST'] ?? 'localhost:8000';
+        $protocol = $isHttps ? 'https://' : 'http://';
+        $host = $_SERVER['HTTP_X_FORWARDED_HOST'] ?? $_SERVER['HTTP_HOST'] ?? 'localhost:8000';
         
         // Check if running inside subfolder (e.g. /Veritolytics-PHP)
         $scriptPath = str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? ''));

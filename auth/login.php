@@ -493,59 +493,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             border-top: 1px solid #f1f5f9;
         }
 
-        .auth-payouts-title {
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 1.4px;
-            text-transform: uppercase;
-            color: #64748b;
-            text-align: center;
-            margin-bottom: 12px;
-        }
-
-        .auth-payment-badges {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            margin-bottom: 16px;
-        }
-
-        .auth-pay-badge {
-            height: 26px;
-            padding: 0 10px;
-            background: #ffffff;
-            border: 1px solid #e2e8f0;
-            border-radius: 6px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-            transition: border-color 0.2s ease, transform 0.2s ease;
-        }
-
-        .auth-pay-badge:hover {
-            border-color: #cbd5e1;
-            transform: translateY(-1px);
-        }
-
         .auth-legal-text {
-            font-size: 0.72rem;
+            font-size: 0.76rem;
             color: #94a3b8;
             text-align: center;
             line-height: 1.5;
-        }
-
-        .auth-legal-text a {
-            color: #64748b;
-            text-decoration: none;
-            transition: color 0.15s ease;
-        }
-
-        .auth-legal-text a:hover {
-            color: var(--auth-primary);
-            text-decoration: underline;
         }
 
         /* RESPONSIVE BREAKPOINTS */
@@ -744,50 +696,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             </div>
         </div>
 
-        <!-- 3. FOOTER: TRUST BADGES & LEGAL -->
+        <!-- 3. FOOTER: COPYRIGHT -->
         <footer class="auth-right-footer">
-            <div class="auth-payouts-title">Secure &amp; Verified Payouts</div>
-            <div class="auth-payment-badges">
-                <!-- PayPal -->
-                <span class="auth-pay-badge" title="PayPal Verified Payouts">
-                    <svg width="48" height="14" viewBox="0 0 100 28" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12.5 3.5H4.2C3.5 3.5 3 4 2.9 4.7L0 23.2C0 23.5 0.2 23.8 0.5 23.8H4.6C5.1 23.8 5.5 23.4 5.6 22.9L6.7 15.8C6.8 15.3 7.2 14.9 7.7 14.9H10.4C15.1 14.9 18.2 12.6 18.9 7.9C19.2 5.9 18.6 4.4 17.3 3.4C16 2.5 14.3 3.5 12.5 3.5Z" fill="#003087"/>
-                        <path d="M12.5 3.5H8.3C7.6 3.5 7.1 4 7 4.7L4.1 23.2C4.1 23.5 4.3 23.8 4.6 23.8H8.7C9.2 23.8 9.6 23.4 9.7 22.9L10.8 15.8C10.9 15.3 11.3 14.9 11.8 14.9H14.5C19.2 14.9 22.3 12.6 23 7.9C23.3 5.9 22.7 4.4 21.4 3.4C20.1 2.5 14.3 3.5 12.5 3.5Z" fill="#0079C1"/>
-                        <text x="30" y="19" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="16" fill="#003087">PayPal</text>
-                    </svg>
-                </span>
-
-                <!-- Visa -->
-                <span class="auth-pay-badge" title="Visa Direct">
-                    <svg width="38" height="13" viewBox="0 0 50 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M19.8 1.2L13 14.8H8.7L5.3 4C5.1 3.2 4.9 2.9 4.3 2.5C3.3 2 1.6 1.5 0 1.2L0.1 0.7H7.1C8 0.7 8.8 1.3 9 2.3L10.7 11.2L15 0.7H19.8V1.2ZM37.3 10.7C37.3 6.6 31.6 6.4 31.7 4.6C31.7 4 32.3 3.4 33.5 3.2C34.1 3.1 35.8 3 37.4 3.8L38.1 0.7C37.1 0.3 35.8 0 34.2 0C30 0 27 2.2 27 5.4C27 7.7 29.1 9 30.7 9.8C32.3 10.6 32.8 11.1 32.8 11.8C32.8 12.9 31.5 13.4 30.3 13.4C28.2 13.4 26.9 12.8 25.9 12.4L25.2 15.6C26.2 16.1 28 16.5 29.9 16.5C34.4 16.5 37.3 14.3 37.3 10.7ZM48.3 14.8H52L48.8 0.7H45.4C44.6 0.7 43.9 1.1 43.6 1.8L37.3 14.8H41.8L42.7 12.3H48.2L48.3 14.8ZM43.9 9.5L46.2 3.2L47.5 9.5H43.9ZM25.8 0.7L22.4 14.8H18.1L21.5 0.7H25.8Z" fill="#1A1F71"/>
-                    </svg>
-                </span>
-
-                <!-- Mastercard -->
-                <span class="auth-pay-badge" title="Mastercard">
-                    <svg width="28" height="17" viewBox="0 0 36 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="13" cy="11" r="10" fill="#EB001B"/>
-                        <circle cx="23" cy="11" r="10" fill="#F79E1B" fill-opacity="0.88"/>
-                    </svg>
-                </span>
-
-                <!-- Amazon Gift Cards -->
-                <span class="auth-pay-badge" title="Amazon Gift Cards">
-                    <svg width="44" height="14" viewBox="0 0 60 18" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <text x="0" y="13" font-family="'Plus Jakarta Sans', sans-serif" font-weight="700" font-size="13" fill="#232F3E">amazon</text>
-                        <path d="M3 16C15 20 35 19 44 14" stroke="#FF9900" stroke-width="1.8" stroke-linecap="round"/>
-                    </svg>
-                </span>
-            </div>
-
             <div class="auth-legal-text">
                 <div>© 2026 Veritolytics. All Rights Reserved.</div>
-                <div class="mt-1">
-                    <a href="<?= BASE_URL ?>/#faq">Privacy Policy</a>
-                    <span class="mx-1">&middot;</span>
-                    <a href="<?= BASE_URL ?>/#faq">Terms of Service</a>
-                </div>
             </div>
         </footer>
     </section>

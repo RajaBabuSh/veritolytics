@@ -63,14 +63,12 @@ assert_test("Contains Password field with toggle button", str_contains($html, 'b
 assert_test("Contains 'Forgot password?' link pointing to auth/forgot-password.php", str_contains($html, 'Forgot password?') && str_contains($html, 'forgot-password.php'));
 assert_test("Contains primary 'Sign in' button", str_contains($html, 'Sign in'));
 assert_test("Contains 'Don\'t have an account? Sign up' pointing to auth/register.php", str_contains($html, 'Sign up') && str_contains($html, 'register.php'));
-assert_test("Contains 'SECURE & VERIFIED PAYOUTS'", str_contains($html, 'Secure &amp; Verified Payouts'));
-assert_test("Contains PayPal payment badge", str_contains($html, 'PayPal'));
-assert_test("Contains Visa payment badge", str_contains($html, 'Visa'));
-assert_test("Contains Mastercard payment badge", str_contains($html, 'Mastercard'));
-assert_test("Contains Amazon payment badge", str_contains($html, 'amazon'));
+assert_test("Does NOT contain 'SECURE & VERIFIED PAYOUTS'", !str_contains($html, 'SECURE & VERIFIED PAYOUTS') && !str_contains($html, 'Secure &amp; Verified Payouts'));
+assert_test("Does NOT contain payment badges in footer (Visa, Mastercard, Amazon, auth-payment-badges)", !str_contains($html, 'auth-payment-badges') && !str_contains($html, 'Visa') && !str_contains($html, 'Mastercard') && !str_contains($html, 'amazon'));
 assert_test("Contains footer copyright '© 2026 Veritolytics. All Rights Reserved.'", str_contains($html, '© 2026 Veritolytics. All Rights Reserved.'));
+assert_test("Does NOT contain 'OpinionPays'", !str_contains($html, 'OpinionPays'));
 assert_test("Does NOT contain 'Insightolytics LLC'", !str_contains($html, 'Insightolytics'));
-assert_test("Contains Privacy Policy & Terms of Service links", str_contains($html, 'Privacy Policy') && str_contains($html, 'Terms of Service'));
+assert_test("Does NOT contain Privacy Policy or Terms in footer", !str_contains($html, 'Privacy Policy') && !str_contains($html, 'Terms of Service'));
 
 echo "\n--- 3. Testing Authentication Handlers ---\n";
 

@@ -14,10 +14,10 @@ $admin = require_admin();
 $pageTitle = 'Members & User Management';
 $db = get_db();
 
-// Handle User Actions (Toggle status, adjust balance, toggle role)
+// Handle User Actions (Toggle status, adjust balance, toggle role, soft-delete, restore)
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
-        flash('danger', 'Security session expired.');
+        flash('danger', 'Security session expired. Please refresh and try again.');
         redirect('/admin/users.php');
     }
 
@@ -25,6 +25,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = (int)($_POST['user_id'] ?? 0);
 
     if ($userId > 0) {
+        // Prevent deleting or suspending self
+        if ($userId === (int)$admin['id'] && in_array($action, ['toggle_status', 'soft_delete'])) {
+            flash('danger', 'You cannot suspend or deactivate your own administrative account.');
+            redirect('/admin/users.php');
+        }
+
         if ($action === 'toggle_status') {
             $newStatus = ($_POST['current_status'] === 'active') ? 'suspended' : 'active';
             $up = $db->prepare("UPDATE users SET status = :status WHERE id = :id");
@@ -35,6 +41,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $up = $db->prepare("UPDATE users SET role = :role WHERE id = :id");
             $up->execute([':role' => $newRole, ':id' => $userId]);
             flash('success', "User #{$userId} role changed to {$newRole}.");
+        } elseif ($action === 'soft_delete') {
+            // Soft deletion preserves all transaction history, balances and database foreign key integrity
+            $up = $db->prepare("UPDATE users SET status = 'suspended', deleted_at = CURRENT_TIMESTAMP WHERE id = :id");
+            $up->execute([':id' => $userId]);
+            flash('warning', "User #{$userId} has been safely deactivated (soft-deleted). All points, balances, and records are preserved permanently in the database.");
+        } elseif ($action === 'restore_user') {
+            $up = $db->prepare("UPDATE users SET status = 'active', deleted_at = NULL WHERE id = :id");
+            $up->execute([':id' => $userId]);
+            flash('success', "User #{$userId} has been restored to active status.");
         } elseif ($action === 'adjust_points') {
             $delta = (int)($_POST['point_delta'] ?? 0);
             $reason = trim($_POST['reason'] ?? 'Administrative Adjustment');
@@ -80,15 +95,23 @@ if (!empty($roleFilter)) {
     $sql .= " AND role = :role";
     $params[':role'] = $roleFilter;
 }
-if (!empty($statusFilter)) {
-    $sql .= " AND status = :st";
-    $params[':st'] = $statusFilter;
+if ($statusFilter === 'active') {
+    $sql .= " AND status = 'active' AND (deleted_at IS NULL)";
+} elseif ($statusFilter === 'suspended') {
+    $sql .= " AND status = 'suspended' AND (deleted_at IS NULL)";
+} elseif ($statusFilter === 'pending') {
+    $sql .= " AND status = 'pending' AND (deleted_at IS NULL)";
+} elseif ($statusFilter === 'deleted') {
+    $sql .= " AND deleted_at IS NOT NULL";
 }
 
-$sql .= " ORDER BY created_at DESC LIMIT 100";
+// Order by id DESC so newly registered users immediately appear at the top
+$sql .= " ORDER BY id DESC LIMIT 200";
 $stmt = $db->prepare($sql);
 $stmt->execute($params);
 $users = $stmt->fetchAll();
+
+$dbInfo = Database::getStatusInfo();
 
 require_once __DIR__ . '/../includes/admin_header.php';
 ?>
@@ -98,6 +121,35 @@ require_once __DIR__ . '/../includes/admin_header.php';
 
     <div class="portal-main">
         <?= render_flash() ?>
+
+        <!-- Database Engine Status Indicator -->
+        <?php if (!$dbInfo['is_mysql']): ?>
+            <div class="alert alert-warning border-warning-subtle bg-warning bg-opacity-10 rounded-3 p-3 mb-4 shadow-xs small d-flex align-items-start gap-3">
+                <i class="bi bi-exclamation-triangle-fill text-warning fs-4 mt-0.5"></i>
+                <div class="flex-grow-1">
+                    <div class="fw-bold text-dark">Database Notice: SQLite Local Fallback Mode Active (<code><?= e($dbInfo['host']) ?></code>)</div>
+                    <div class="text-muted mt-0.5">
+                        Your application is currently using local SQLite fallback storage. On Vercel serverless containers, local disk files are ephemeral.
+                        To ensure registered users and points balances <strong>persist permanently across all Vercel container restarts</strong>, add your external MySQL database credentials (<code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code>, <code>DB_NAME</code> or <code>DATABASE_URL</code>) in your Vercel Project Settings &rarr; Environment Variables.
+                    </div>
+                    <?php if (!empty($dbInfo['error'])): ?>
+                        <div class="mt-2 text-danger small font-monospace bg-white p-2 rounded border border-danger-subtle">
+                            <strong>Connection Attempt Notice:</strong> <?= e($dbInfo['error']) ?>
+                        </div>
+                    <?php endif; ?>
+                </div>
+            </div>
+        <?php else: ?>
+            <div class="alert alert-success border-success-subtle bg-success bg-opacity-10 rounded-3 p-2.5 mb-4 shadow-xs small d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <i class="bi bi-database-check text-success fs-5"></i>
+                    <div>
+                        <strong>Production Database Connected:</strong> MySQL Cloud (<code><?= e($dbInfo['host']) ?></code> / <code><?= e($dbInfo['database']) ?></code>) — All member accounts, points, and sessions are permanently stored.
+                    </div>
+                </div>
+                <span class="badge bg-success rounded-pill px-2.5 py-1">MySQL Cloud Active</span>
+            </div>
+        <?php endif; ?>
 
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
             <div>
@@ -128,8 +180,10 @@ require_once __DIR__ . '/../includes/admin_header.php';
                 <div class="col-md-2">
                     <select name="status" class="form-select form-select-sm">
                         <option value="">All Statuses</option>
-                        <option value="active" <?= $statusFilter === 'active' ? 'selected' : '' ?>>Active</option>
-                        <option value="suspended" <?= $statusFilter === 'suspended' ? 'selected' : '' ?>>Suspended</option>
+                        <option value="active" <?= $statusFilter === 'active' ? 'selected' : '' ?>>Active Only</option>
+                        <option value="suspended" <?= $statusFilter === 'suspended' ? 'selected' : '' ?>>Suspended Only</option>
+                        <option value="pending" <?= $statusFilter === 'pending' ? 'selected' : '' ?>>Pending Only</option>
+                        <option value="deleted" <?= $statusFilter === 'deleted' ? 'selected' : '' ?>>Deactivated / Deleted</option>
                     </select>
                 </div>
                 <div class="col-md-2 d-flex gap-1">
@@ -145,19 +199,32 @@ require_once __DIR__ . '/../includes/admin_header.php';
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light small text-muted">
                         <tr>
-                            <th>User</th>
+                            <th>User ID</th>
+                            <th>Member</th>
                             <th>Role</th>
                             <th>Status</th>
                             <th>Points Balance</th>
                             <th>Lifetime USD</th>
                             <th>Surveys</th>
                             <th>Country</th>
+                            <th>Registered</th>
                             <th class="text-end">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
+                        <?php if (empty($users)): ?>
+                            <tr>
+                                <td colspan="10" class="text-center py-4 text-muted small">
+                                    No user accounts matched the filter criteria.
+                                </td>
+                            </tr>
+                        <?php endif; ?>
+
                         <?php foreach ($users as $u): ?>
                             <tr>
+                                <td class="small text-muted font-monospace">
+                                    #<?= (int)$u['id'] ?>
+                                </td>
                                 <td>
                                     <div class="fw-bold text-dark small"><?= e($u['first_name'] . ' ' . $u['last_name']) ?></div>
                                     <small class="text-muted"><?= e($u['email']) ?></small>
@@ -168,9 +235,23 @@ require_once __DIR__ . '/../includes/admin_header.php';
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge <?= $u['status'] === 'active' ? 'bg-success-subtle text-success border-success-subtle' : 'bg-danger-subtle text-danger border-danger-subtle' ?> border rounded-pill small fw-semibold text-capitalize">
-                                        <?= e($u['status']) ?>
-                                    </span>
+                                    <?php if (!empty($u['deleted_at'])): ?>
+                                        <span class="badge bg-secondary-subtle text-secondary border-secondary-subtle border rounded-pill small fw-semibold">
+                                            Deactivated
+                                        </span>
+                                    <?php elseif ($u['status'] === 'active'): ?>
+                                        <span class="badge bg-success-subtle text-success border-success-subtle border rounded-pill small fw-semibold text-capitalize">
+                                            Active
+                                        </span>
+                                    <?php elseif ($u['status'] === 'suspended'): ?>
+                                        <span class="badge bg-danger-subtle text-danger border-danger-subtle border rounded-pill small fw-semibold text-capitalize">
+                                            Suspended
+                                        </span>
+                                    <?php else: ?>
+                                        <span class="badge bg-warning-subtle text-warning border-warning-subtle border rounded-pill small fw-semibold text-capitalize">
+                                            <?= e($u['status']) ?>
+                                        </span>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <span class="fw-bold text-dark small">
@@ -183,10 +264,13 @@ require_once __DIR__ . '/../includes/admin_header.php';
                                     </span>
                                 </td>
                                 <td class="small text-muted text-center">
-                                    <?= $u['completed_surveys_count'] ?>
+                                    <?= (int)$u['completed_surveys_count'] ?>
                                 </td>
                                 <td class="small text-muted">
                                     <?= e($u['country']) ?>
+                                </td>
+                                <td class="small text-muted">
+                                    <?= !empty($u['created_at']) ? date('M j, Y', strtotime($u['created_at'])) : '—' ?>
                                 </td>
                                 <td class="text-end">
                                     <div class="dropdown">
@@ -199,35 +283,55 @@ require_once __DIR__ . '/../includes/admin_header.php';
                                                     <i class="bi bi-coin text-warning me-2"></i> Adjust Points
                                                 </button>
                                             </li>
-                                            <li>
-                                                <form method="POST" action="<?= BASE_URL ?>/admin/users.php">
-                                                    <?= csrf_field() ?>
-                                                    <input type="hidden" name="action" value="toggle_status">
-                                                    <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-                                                    <input type="hidden" name="current_status" value="<?= $u['status'] ?>">
-                                                    <button type="submit" class="dropdown-item rounded-2 py-1.5 <?= $u['status'] === 'active' ? 'text-danger' : 'text-success' ?>">
-                                                        <i class="bi <?= $u['status'] === 'active' ? 'bi-person-x' : 'bi-person-check' ?> me-2"></i>
-                                                        <?= $u['status'] === 'active' ? 'Suspend Account' : 'Activate Account' ?>
+                                            
+                                            <?php if (empty($u['deleted_at'])): ?>
+                                                <li>
+                                                    <form method="POST" action="<?= BASE_URL ?>/admin/users.php">
+                                                        <?= csrf_field() ?>
+                                                        <input type="hidden" name="action" value="toggle_status">
+                                                        <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
+                                                        <input type="hidden" name="current_status" value="<?= $u['status'] ?>">
+                                                        <button type="submit" class="dropdown-item rounded-2 py-1.5 <?= $u['status'] === 'active' ? 'text-warning' : 'text-success' ?>">
+                                                            <i class="bi <?= $u['status'] === 'active' ? 'bi-person-slash' : 'bi-person-check' ?> me-2"></i>
+                                                            <?= $u['status'] === 'active' ? 'Suspend Account' : 'Activate Account' ?>
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li>
+                                                    <form method="POST" action="<?= BASE_URL ?>/admin/users.php">
+                                                        <?= csrf_field() ?>
+                                                        <input type="hidden" name="action" value="toggle_role">
+                                                        <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
+                                                        <input type="hidden" name="current_role" value="<?= $u['role'] ?>">
+                                                        <button type="submit" class="dropdown-item rounded-2 py-1.5 text-secondary" onclick="return confirm('Toggle this user role?');">
+                                                            <i class="bi bi-shield-shaded me-2"></i> Toggle Admin Role
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                                <li><hr class="dropdown-divider my-1"></li>
+                                                <li>
+                                                    <button class="dropdown-item rounded-2 py-1.5 text-danger" data-bs-toggle="modal" data-bs-target="#softDeleteModal_<?= $u['id'] ?>">
+                                                        <i class="bi bi-trash3 me-2"></i> Deactivate Account
                                                     </button>
-                                                </form>
-                                            </li>
-                                            <li>
-                                                <form method="POST" action="<?= BASE_URL ?>/admin/users.php">
-                                                    <?= csrf_field() ?>
-                                                    <input type="hidden" name="action" value="toggle_role">
-                                                    <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
-                                                    <input type="hidden" name="current_role" value="<?= $u['role'] ?>">
-                                                    <button type="submit" class="dropdown-item rounded-2 py-1.5 text-secondary" onclick="return confirm('Toggle this user role?');">
-                                                        <i class="bi bi-shield-shaded me-2"></i> Toggle Admin Role
-                                                    </button>
-                                                </form>
-                                            </li>
+                                                </li>
+                                            <?php else: ?>
+                                                <li>
+                                                    <form method="POST" action="<?= BASE_URL ?>/admin/users.php">
+                                                        <?= csrf_field() ?>
+                                                        <input type="hidden" name="action" value="restore_user">
+                                                        <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
+                                                        <button type="submit" class="dropdown-item rounded-2 py-1.5 text-success">
+                                                            <i class="bi bi-arrow-counterclockwise me-2"></i> Restore Account
+                                                        </button>
+                                                    </form>
+                                                </li>
+                                            <?php endif; ?>
                                         </ul>
                                     </div>
                                 </td>
                             </tr>
 
-                            <!-- Adjust Balance Modal for User -->
+                            <!-- Adjust Balance Modal -->
                             <div class="modal fade" id="adjustModal_<?= $u['id'] ?>" tabindex="-1" aria-hidden="true">
                                 <div class="modal-dialog modal-dialog-centered modal-sm">
                                     <div class="modal-content border-0 shadow-lg rounded-4">
@@ -262,6 +366,41 @@ require_once __DIR__ . '/../includes/admin_header.php';
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- Explicit Confirmation Soft-Delete Modal -->
+                            <?php if (empty($u['deleted_at'])): ?>
+                                <div class="modal fade" id="softDeleteModal_<?= $u['id'] ?>" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog modal-dialog-centered">
+                                        <div class="modal-content border-0 shadow-lg rounded-4">
+                                            <div class="modal-header border-bottom py-3">
+                                                <h6 class="modal-title fw-bold text-danger d-flex align-items-center gap-2">
+                                                    <i class="bi bi-exclamation-triangle-fill"></i> Confirm Account Deactivation
+                                                </h6>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <form method="POST" action="<?= BASE_URL ?>/admin/users.php">
+                                                <?= csrf_field() ?>
+                                                <input type="hidden" name="action" value="soft_delete">
+                                                <input type="hidden" name="user_id" value="<?= $u['id'] ?>">
+
+                                                <div class="modal-body p-4 small">
+                                                    <p class="mb-3">
+                                                        Are you sure you want to deactivate member account <strong><?= e($u['first_name'] . ' ' . $u['last_name']) ?></strong> (<code><?= e($u['email']) ?></code>)?
+                                                    </p>
+                                                    <div class="alert alert-light border small text-muted mb-0">
+                                                        <i class="bi bi-shield-check text-success me-1"></i>
+                                                        <strong>Safe Soft-Delete Guarantee:</strong> The member's points balance (<strong><?= format_points($u['balance_points']) ?></strong>), survey completions, and transaction records will <strong>never be purged from the database</strong>. The user will be blocked from signing in, but their record remains archived and can be restored at any time.
+                                                    </div>
+                                                </div>
+                                                <div class="modal-footer border-top-0 pt-0 px-4 pb-4">
+                                                    <button type="button" class="btn btn-light rounded-3" data-bs-dismiss="modal">Cancel</button>
+                                                    <button type="submit" class="btn btn-danger rounded-3 px-3">Confirm Deactivation</button>
+                                                </div>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            <?php endif; ?>
                         <?php endforeach; ?>
                     </tbody>
                 </table>

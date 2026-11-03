@@ -87,14 +87,16 @@ $pendingRedemptions = $db->query("
     LIMIT 6
 ")->fetchAll();
 
-// Recent Members
+// Recent Members (Order by id DESC to immediately surface newest registrations)
 $recentUsers = $db->query("
     SELECT id, first_name, last_name, email, country, balance_points, created_at
     FROM users 
     WHERE role = 'member'
-    ORDER BY created_at DESC 
+    ORDER BY id DESC 
     LIMIT 5
 ")->fetchAll();
+
+$dbInfo = Database::getStatusInfo();
 
 require_once __DIR__ . '/../includes/admin_header.php';
 ?>
@@ -105,14 +107,27 @@ require_once __DIR__ . '/../includes/admin_header.php';
     <div class="portal-main">
         <?= render_flash() ?>
 
+        <?php if (!$dbInfo['is_mysql']): ?>
+            <div class="alert alert-warning border-warning-subtle bg-warning bg-opacity-10 rounded-3 p-3 mb-4 shadow-xs small d-flex align-items-start gap-3">
+                <i class="bi bi-exclamation-triangle-fill text-warning fs-4 mt-0.5"></i>
+                <div class="flex-grow-1">
+                    <div class="fw-bold text-dark">Database Storage Notice: SQLite Local Fallback Active</div>
+                    <div class="text-muted mt-0.5">
+                        Your application is running on ephemeral SQLite storage. In serverless hosting (Vercel), local container disks reset periodically.
+                        To permanently retain all new member registrations, configure your MySQL database credentials (<code>DB_HOST</code>, <code>DB_USER</code>, <code>DB_PASS</code>, <code>DB_NAME</code> or <code>DATABASE_URL</code>) in Vercel Environment Variables.
+                    </div>
+                </div>
+            </div>
+        <?php endif; ?>
+
         <div class="d-flex flex-column flex-md-row justify-content-between align-items-start align-items-md-center gap-3 mb-4">
             <div>
                 <h4 class="fw-bold text-dark mb-1">Administrative Overview</h4>
                 <p class="text-muted small mb-0">Platform health, financial ledger, and member redemption moderation.</p>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <span class="badge bg-light text-dark border rounded-pill px-3 py-1.5 small fw-semibold">
-                    <i class="bi bi-database me-1 text-primary"></i> Engine: <?= strtoupper(Database::getDriver()) ?>
+                <span class="badge <?= $dbInfo['is_mysql'] ? 'bg-success-subtle text-success border-success-subtle' : 'bg-warning-subtle text-warning border-warning-subtle' ?> border rounded-pill px-3 py-1.5 small fw-semibold">
+                    <i class="bi bi-database me-1"></i> Database: <?= $dbInfo['is_mysql'] ? 'MySQL Cloud' : 'SQLite Local' ?>
                 </span>
                 <a href="<?= BASE_URL ?>/admin/surveys.php" class="btn btn-sm btn-danger rounded-pill px-3 py-1.5 fw-bold shadow-sm">
                     <i class="bi bi-plus-circle me-1"></i> New Survey

@@ -31,9 +31,11 @@ CREATE TABLE IF NOT EXISTS users (
   notification_preferences TEXT DEFAULT NULL,
   reset_token TEXT DEFAULT NULL,
   reset_expires_at TEXT DEFAULT NULL,
+  deleted_at TEXT DEFAULT NULL,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
   updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+CREATE INDEX IF NOT EXISTS idx_users_deleted ON users (deleted_at);
 
 CREATE TABLE IF NOT EXISTS surveys (
   id INTEGER PRIMARY KEY AUTOINCREMENT,

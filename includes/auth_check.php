@@ -173,8 +173,8 @@ function current_user(): ?array {
         }
     }
 
-    if (!$user || $user['status'] === 'suspended') {
-        // Invalidate session if user was deleted or suspended
+    if (!$user || $user['status'] === 'suspended' || !empty($user['deleted_at'])) {
+        // Invalidate session if user was soft-deleted or suspended
         clear_authenticated_session();
         return null;
     }

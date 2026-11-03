@@ -16,39 +16,108 @@ $db = get_db();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!verify_csrf_token($_POST['csrf_token'] ?? '')) {
-        flash('danger', 'Security session expired.');
+        flash('danger', 'Security session expired. Please refresh and try again.');
         redirect('/admin/support.php');
     }
 
     $ticketId = (int)($_POST['ticket_id'] ?? 0);
-    $status = trim($_POST['status'] ?? 'open');
-    $reply = trim($_POST['admin_reply'] ?? '');
+    $statusRaw = trim((string)($_POST['status'] ?? ''));
+    $allowedStatuses = ['open', 'in_review', 'resolved'];
+    $newReply = trim((string)($_POST['admin_reply'] ?? ''));
 
-    if ($ticketId > 0) {
+    if ($ticketId <= 0) {
+        flash('danger', 'Invalid support ticket ID.');
+        redirect('/admin/support.php');
+    }
+
+    try {
+        // Fetch existing ticket to verify existence and check current state
+        $stmtFind = $db->prepare("SELECT * FROM support_tickets WHERE id = :id LIMIT 1");
+        $stmtFind->execute([':id' => $ticketId]);
+        $ticket = $stmtFind->fetch();
+
+        if (!$ticket) {
+            flash('danger', 'Support ticket not found or already deleted.');
+            redirect('/admin/support.php');
+        }
+
+        // Validate status: If invalid, keep existing status or default to open
+        $status = in_array($statusRaw, $allowedStatuses, true) ? $statusRaw : ($ticket['status'] ?? 'open');
+
+        // Non-destructive reply handling:
+        // If admin wrote a response, use it. If submitted empty, preserve previous reply!
+        $hasNewReply = ($newReply !== '');
+        $finalReply = $hasNewReply ? $newReply : ($ticket['admin_reply'] ?? null);
+        $finalAdminId = $hasNewReply ? (int)$admin['id'] : ($ticket['admin_id'] ?? (int)$admin['id']);
+        $finalRepliedAt = $hasNewReply ? date('Y-m-d H:i:s') : ($ticket['replied_at'] ?? null);
+        $now = date('Y-m-d H:i:s');
+
+        // Start transaction
+        $db->beginTransaction();
+
         $up = $db->prepare("
             UPDATE support_tickets 
-            SET status = :st, admin_reply = :reply, updated_at = NOW() 
+            SET status = :st, 
+                admin_reply = :reply, 
+                admin_id = :aid, 
+                replied_at = :rat, 
+                updated_at = :upat 
             WHERE id = :id
         ");
         $up->execute([
-            ':st' => $status,
-            ':reply' => $reply ?: null,
-            ':id' => $ticketId
+            ':st'    => $status,
+            ':reply' => $finalReply,
+            ':aid'   => $finalAdminId,
+            ':rat'   => $finalRepliedAt,
+            ':upat'  => $now,
+            ':id'    => $ticketId
         ]);
 
-        // If ticket belongs to a registered member, notify them
-        $t = $db->query("SELECT user_id, ticket_number FROM support_tickets WHERE id = {$ticketId}")->fetch();
-        if ($t && !empty($t['user_id'])) {
+        // If a new non-empty response was entered and differs from previous, log into ticket_replies
+        if ($hasNewReply && $newReply !== ($ticket['admin_reply'] ?? '')) {
+            try {
+                $replyStmt = $db->prepare("
+                    INSERT INTO ticket_replies (ticket_id, user_id, is_admin, message, created_at)
+                    VALUES (:ticket_id, :user_id, 1, :message, :created_at)
+                ");
+                $replyStmt->execute([
+                    ':ticket_id'  => $ticketId,
+                    ':user_id'    => (int)$admin['id'],
+                    ':message'    => $newReply,
+                    ':created_at' => $now
+                ]);
+            } catch (Throwable $repEx) {
+                error_log("Veritolytics ticket_replies logging notice: " . $repEx->getMessage());
+            }
+        }
+
+        // In-app notification to member if ticket belongs to a registered user
+        if (!empty($ticket['user_id'])) {
+            $statusLabel = ucwords(str_replace('_', ' ', $status));
+            $notifMsg = "Your support ticket #{$ticket['ticket_number']} status has been updated to '{$statusLabel}'.";
+            if ($hasNewReply) {
+                $preview = mb_strimwidth($newReply, 0, 90, '...');
+                $notifMsg .= " Staff response: \"{$preview}\"";
+            }
             add_notification(
-                (int)$t['user_id'],
-                "Update on Ticket #{$t['ticket_number']}",
-                "Your support ticket status has been changed to '{$status}'." . ($reply ? " Staff response: '{$reply}'" : ''),
+                (int)$ticket['user_id'],
+                "Update on Ticket #{$ticket['ticket_number']}",
+                $notifMsg,
                 'info',
-                '/member/dashboard.php'
+                '/member/support.php'
             );
         }
 
-        flash('success', "Ticket #{$ticketId} updated successfully.");
+        // Commit transaction only if all operations succeed
+        $db->commit();
+        flash('success', "Ticket #{$ticket['ticket_number']} updated successfully.");
+
+    } catch (Throwable $e) {
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
+        error_log("Veritolytics Admin Support Error: " . $e->getMessage() . " in " . $e->getFile() . ":" . $e->getLine());
+        flash('danger', 'Unable to save ticket status and reply due to a database error. Please try again.');
     }
 
     redirect('/admin/support.php');
@@ -180,7 +249,14 @@ require_once __DIR__ . '/../includes/admin_header.php';
                                                     </div>
 
                                                     <div class="mb-3">
-                                                        <label class="form-label small fw-semibold text-muted">Administrator Response / Resolution Note</label>
+                                                        <div class="d-flex justify-content-between align-items-center mb-1">
+                                                            <label class="form-label small fw-semibold text-muted mb-0">Administrator Response / Resolution Note</label>
+                                                            <?php if (!empty($t['replied_at'])): ?>
+                                                                <small class="text-muted" style="font-size: 0.75rem;">
+                                                                    <i class="bi bi-clock-history me-1"></i> Last replied: <?= date('M j, Y • g:i A', strtotime($t['replied_at'])) ?>
+                                                                </small>
+                                                            <?php endif; ?>
+                                                        </div>
                                                         <textarea name="admin_reply" class="form-control rounded-3" rows="4" placeholder="Type official response to the user..."><?= e($t['admin_reply'] ?? '') ?></textarea>
                                                     </div>
                                                 </div>

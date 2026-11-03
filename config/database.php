@@ -156,30 +156,58 @@ class Database {
                 // Table might be initializing
             }
 
-            // Ensure support_tickets table exists on MySQL
+            // Ensure support_tickets and ticket_replies tables exist on MySQL & auto-migrate missing columns
             try {
-                self::$instance->query("SELECT 1 FROM `support_tickets` LIMIT 1");
+                self::$instance->exec("
+                    CREATE TABLE IF NOT EXISTS `support_tickets` (
+                      `id` INT AUTO_INCREMENT PRIMARY KEY,
+                      `ticket_number` VARCHAR(50) NOT NULL UNIQUE,
+                      `user_id` INT DEFAULT NULL,
+                      `name` VARCHAR(100) NOT NULL,
+                      `email` VARCHAR(191) NOT NULL,
+                      `subject` VARCHAR(255) NOT NULL,
+                      `message` TEXT NOT NULL,
+                      `status` ENUM('open', 'in_review', 'resolved') NOT NULL DEFAULT 'open',
+                      `priority` ENUM('normal', 'high', 'urgent') NOT NULL DEFAULT 'normal',
+                      `admin_reply` TEXT DEFAULT NULL,
+                      `admin_id` INT DEFAULT NULL,
+                      `replied_at` DATETIME DEFAULT NULL,
+                      `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+                      INDEX `idx_tickets_user` (`user_id`),
+                      INDEX `idx_tickets_status` (`status`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ");
+
+                // Auto-migrate columns for existing support_tickets table
+                $tCols = self::$instance->query("SHOW COLUMNS FROM `support_tickets`")->fetchAll(PDO::FETCH_COLUMN, 0);
+                $requiredTicketCols = [
+                    'admin_reply' => 'TEXT DEFAULT NULL',
+                    'admin_id'    => 'INT DEFAULT NULL',
+                    'replied_at'  => 'DATETIME DEFAULT NULL',
+                    'updated_at'  => 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP',
+                ];
+                foreach ($requiredTicketCols as $colName => $colDef) {
+                    if (!in_array($colName, $tCols)) {
+                        self::$instance->exec("ALTER TABLE `support_tickets` ADD COLUMN `{$colName}` {$colDef}");
+                    }
+                }
+
+                // Ensure ticket_replies table exists
+                self::$instance->exec("
+                    CREATE TABLE IF NOT EXISTS `ticket_replies` (
+                      `id` INT AUTO_INCREMENT PRIMARY KEY,
+                      `ticket_id` INT NOT NULL,
+                      `user_id` INT NOT NULL,
+                      `is_admin` TINYINT(1) NOT NULL DEFAULT 1,
+                      `message` TEXT NOT NULL,
+                      `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                      INDEX `idx_replies_ticket` (`ticket_id`),
+                      INDEX `idx_replies_user` (`user_id`)
+                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+                ");
             } catch (Throwable $tblEx) {
-                try {
-                    self::$instance->exec("
-                        CREATE TABLE IF NOT EXISTS `support_tickets` (
-                          `id` INT AUTO_INCREMENT PRIMARY KEY,
-                          `ticket_number` VARCHAR(50) NOT NULL UNIQUE,
-                          `user_id` INT DEFAULT NULL,
-                          `name` VARCHAR(100) NOT NULL,
-                          `email` VARCHAR(191) NOT NULL,
-                          `subject` VARCHAR(255) NOT NULL,
-                          `message` TEXT NOT NULL,
-                          `status` ENUM('open', 'in_review', 'resolved') NOT NULL DEFAULT 'open',
-                          `priority` ENUM('normal', 'high', 'urgent') NOT NULL DEFAULT 'normal',
-                          `admin_reply` TEXT DEFAULT NULL,
-                          `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                          `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-                          INDEX `idx_tickets_user` (`user_id`),
-                          INDEX `idx_tickets_status` (`status`)
-                        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
-                    ");
-                } catch (Throwable $createEx) {}
+                // Table might be initializing or schema already updated
             }
 
             return self::$instance;
@@ -219,7 +247,7 @@ class Database {
                     }
                 }
 
-                // Auto-migrate missing columns for SQLite
+                // Auto-migrate missing columns for SQLite users table
                 try {
                     $cols = self::$instance->query("PRAGMA table_info(users)")->fetchAll(PDO::FETCH_COLUMN, 1);
                     $requiredCols = [
@@ -238,6 +266,35 @@ class Database {
                         }
                     }
                 } catch (Throwable $migrateEx) {}
+
+                // Auto-migrate missing columns for SQLite support_tickets table & ensure ticket_replies exists
+                try {
+                    $tCols = self::$instance->query("PRAGMA table_info(support_tickets)")->fetchAll(PDO::FETCH_COLUMN, 1);
+                    $requiredTicketCols = [
+                        'admin_reply' => 'TEXT DEFAULT NULL',
+                        'admin_id'    => 'INTEGER DEFAULT NULL',
+                        'replied_at'  => 'DATETIME DEFAULT NULL',
+                        'updated_at'  => 'DATETIME DEFAULT CURRENT_TIMESTAMP',
+                    ];
+                    foreach ($requiredTicketCols as $colName => $colDef) {
+                        if (!in_array($colName, $tCols)) {
+                            self::$instance->exec("ALTER TABLE support_tickets ADD COLUMN {$colName} {$colDef}");
+                        }
+                    }
+
+                    self::$instance->exec("
+                        CREATE TABLE IF NOT EXISTS ticket_replies (
+                          id INTEGER PRIMARY KEY AUTOINCREMENT,
+                          ticket_id INTEGER NOT NULL,
+                          user_id INTEGER NOT NULL,
+                          is_admin INTEGER NOT NULL DEFAULT 1,
+                          message TEXT NOT NULL,
+                          created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                          FOREIGN KEY (ticket_id) REFERENCES support_tickets(id) ON DELETE CASCADE,
+                          FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+                        )
+                    ");
+                } catch (Throwable $ticketMigrateEx) {}
 
                 return self::$instance;
             } catch (PDOException $sqliteEx) {

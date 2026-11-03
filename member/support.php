@@ -198,9 +198,16 @@ require_once __DIR__ . '/../includes/member_header.php';
 
                             <?php if (!empty($t['admin_reply'])): ?>
                                 <div class="p-3 rounded-3 bg-primary-subtle bg-opacity-25 border-start border-primary border-3 mt-2">
-                                    <span class="small fw-bold text-primary d-block mb-1">
-                                        <i class="bi bi-reply-fill me-1"></i> Response from Veritolytics Operations Desk:
-                                    </span>
+                                    <div class="d-flex justify-content-between align-items-center mb-1">
+                                        <span class="small fw-bold text-primary">
+                                            <i class="bi bi-reply-fill me-1"></i> Response from Veritolytics Operations Desk:
+                                        </span>
+                                        <?php if (!empty($t['replied_at'])): ?>
+                                            <small class="text-muted" style="font-size: 0.75rem;">
+                                                <?= time_ago($t['replied_at']) ?>
+                                            </small>
+                                        <?php endif; ?>
+                                    </div>
                                     <div class="small text-dark"><?= nl2br(e($t['admin_reply'])) ?></div>
                                 </div>
                             <?php endif; ?>

@@ -188,15 +188,35 @@ CREATE TABLE `support_tickets` (
   `status` ENUM('open', 'in_review', 'resolved') NOT NULL DEFAULT 'open',
   `priority` ENUM('normal', 'high', 'urgent') NOT NULL DEFAULT 'normal',
   `admin_reply` TEXT DEFAULT NULL,
+  `admin_id` INT DEFAULT NULL,
+  `replied_at` DATETIME DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX `idx_tickets_user` (`user_id`),
   INDEX `idx_tickets_status` (`status`),
-  CONSTRAINT `fk_tickets_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
+  INDEX `idx_tickets_admin` (`admin_id`),
+  CONSTRAINT `fk_tickets_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE SET NULL,
+  CONSTRAINT `fk_tickets_admin` FOREIGN KEY (`admin_id`) REFERENCES `users`(`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- ------------------------------------------------------------------------------
--- 9. SESSIONS TABLE (Serverless & Distributed PHP Session Persistence)
+-- 9. TICKET REPLIES TABLE (Support Thread History & Admin Responses)
+-- ------------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS `ticket_replies` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `ticket_id` INT NOT NULL,
+  `user_id` INT NOT NULL,
+  `is_admin` TINYINT(1) NOT NULL DEFAULT 1,
+  `message` TEXT NOT NULL,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  INDEX `idx_replies_ticket` (`ticket_id`),
+  INDEX `idx_replies_user` (`user_id`),
+  CONSTRAINT `fk_replies_ticket` FOREIGN KEY (`ticket_id`) REFERENCES `support_tickets`(`id`) ON DELETE CASCADE,
+  CONSTRAINT `fk_replies_user` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ------------------------------------------------------------------------------
+-- 10. SESSIONS TABLE (Serverless & Distributed PHP Session Persistence)
 -- ------------------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS `sessions` (
   `id` VARCHAR(128) NOT NULL PRIMARY KEY,

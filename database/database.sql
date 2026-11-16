@@ -233,15 +233,15 @@ CREATE TABLE IF NOT EXISTS `sessions` (
 -- REALISTIC SEED DATA (CLEARLY LABELED DEMO DATA)
 -- ==============================================================================
 
--- Admin Credentials: admin@veritopinion.com / Admin@12345
--- Member Credentials: member@veritopinion.com / Member@12345
+-- Admin Credentials: admin@veritopinion.com (or admin@veritolytics.com) / Admin@12345
+-- Member Credentials: member@veritopinion.com (or member@veritolytics.com) / Member@12345
 INSERT INTO `users` (
   `id`, `first_name`, `last_name`, `email`, `password_hash`, `country`, `phone`, 
   `date_of_birth`, `gender`, `employment_status`, `annual_income`, `education_level`, 
   `role`, `status`, `balance_points`, `lifetime_earnings_usd`, `completed_surveys_count`, `profile_completion_pct`
 ) VALUES
-(1, 'System', 'Administrator', 'admin@veritopinion.com', '$2y$10$swdq8ywEpnzd9TgqxQAHu.dp6n/whKucIHMKWAosbdE/M7nkAovjK', 'United States', '+1-555-0199', '1985-05-15', 'Male', 'Executive / Senior Manager', '$150,000+', 'Master\'s Degree', 'admin', 'active', 5000, 50.00, 10, 100),
-(2, 'Alex', 'Morgan', 'member@veritopinion.com', '$2y$10$MU3NL3tpULHqARBsuFG9ROd3aYkSX01tock/WYHEygBKZzZ5UhKBC', 'United States', '+1-555-0142', '1992-08-22', 'Female', 'Employed Full-Time', '$75,000 - $99,999', 'Bachelor\'s Degree', 'member', 'active', 1650, 16.50, 4, 85);
+(1, 'System', 'Administrator', 'admin@veritopinion.com', '$2y$10$ZA48YSa5IybOgCK.mA81VOKdoSyGiwr4i6jSVDAwMvY92ZXmphvoe', 'United States', '+1-555-0199', '1985-05-15', 'Male', 'Executive / Senior Manager', '$150,000+', 'Master\'s Degree', 'admin', 'active', 5000, 50.00, 10, 100),
+(2, 'Alex', 'Morgan', 'member@veritopinion.com', '$2y$10$Zt9uUkJyGIHwQncveUbt3ev7ZSvzLha0neSLhNPhUBAopZnC0BTue', 'United States', '+1-555-0142', '1992-08-22', 'Female', 'Employed Full-Time', '$75,000 - $99,999', 'Bachelor\'s Degree', 'member', 'active', 1650, 16.50, 4, 85);
 
 -- SEED REWARDS
 INSERT INTO `rewards` (`id`, `title`, `category`, `points_required`, `cash_equivalent_usd`, `delivery_type`, `icon`, `is_active`) VALUES
